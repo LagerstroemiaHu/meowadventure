@@ -1,0 +1,222 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>圆头耄耋: 喵生冒险</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Noto Sans SC', sans-serif;
+        background-color: #000;
+        color: #1c1917;
+        overflow: hidden;
+      }
+      
+      .poly-button {
+        transition: all 0.1s;
+      }
+      .poly-button:active {
+        transform: translate(2px, 2px);
+        box-shadow: 0px 0px 0px 0px black;
+      }
+      
+      /* Neobrutalism custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 10px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f5f5f4; 
+        border-left: 4px solid black;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #fbbf24; 
+        border: 2px solid black;
+      }
+
+      @keyframes move-bg {
+        from { background-position: 0 0; }
+        to { background-position: 1000px 1000px; }
+      }
+
+      .stage-stray {
+        background-color: #b45309;
+        background-image: conic-gradient(#78350f 25%, transparent 0 50%, #78350f 0 75%, transparent 0);
+        background-size: 20px 20px;
+        animation: move-bg 120s linear infinite;
+      }
+      .stage-cat-lord {
+        background-color: #4c1d95;
+        background-image: conic-gradient(#2e1065 25%, transparent 0 50%, #2e1065 0 75%, transparent 0);
+        background-size: 20px 20px;
+        animation: move-bg 120s linear infinite;
+      }
+      .stage-mansion {
+        background-color: #1e3a8a;
+        background-image: conic-gradient(#172554 25%, transparent 0 50%, #172554 0 75%, transparent 0);
+        background-size: 20px 20px;
+        animation: move-bg 120s linear infinite;
+      }
+      .stage-celebrity {
+        background-color: #be123c;
+        background-image: conic-gradient(#4c0519 25%, transparent 0 50%, #4c0519 0 75%, transparent 0);
+        background-size: 20px 20px;
+        animation: move-bg 120s linear infinite;
+      }
+
+      /* 超动力 3D 卡牌翻转 */
+      @keyframes portrait-slam {
+        0% { transform: rotateY(0deg) rotateX(0deg) scale(1); filter: blur(0); }
+        15% { transform: rotateY(180deg) rotateX(10deg) scale(0.9); filter: blur(2px); }
+        40% { transform: rotateY(540deg) rotateX(-15deg) scale(1.6); filter: blur(6px); }
+        70% { transform: rotateY(900deg) rotateX(10deg) scale(1.2); filter: blur(4px); }
+        90% { transform: rotateY(1060deg) rotateX(5deg) scale(1.05); filter: blur(1px); }
+        100% { transform: rotateY(1080deg) rotateX(0deg) scale(1); filter: blur(0); }
+      }
+      
+      .flip-container {
+        perspective: 1500px;
+      }
+      .flip-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transform-style: preserve-3d;
+      }
+      .flip-active .flip-inner {
+        animation: portrait-slam 1.2s cubic-bezier(0.2, 0, 0.2, 1) forwards;
+      }
+      .flip-face {
+        position: absolute;
+        inset: 0;
+        backface-visibility: hidden;
+        border: 4px solid black;
+      }
+      .flip-back {
+        transform: rotateY(180deg);
+        background: #fbbf24;
+        background-image: radial-gradient(circle, #d97706 20%, transparent 20%);
+        background-size: 30px 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* 重型机械卷帘门 */
+      .shutter-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 50;
+        background: #1c1917;
+        background-image: 
+          repeating-linear-gradient(0deg, #1c1917, #1c1917 14px, #292524 14px, #292524 28px);
+        transform: translateY(-200%);
+        transition: transform 0.9s cubic-bezier(0.7, -0.2, 0.4, 1.2);
+        border-bottom: 15px solid #fbbf24;
+        box-shadow: 0 40px 100px rgba(0,0,0,0.9);
+      }
+      .shutter-overlay::after {
+        content: "STAGE REBOOTING...";
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #fbbf24;
+        font-weight: 900;
+        font-size: 14px;
+        letter-spacing: 0.2em;
+        opacity: 0.5;
+      }
+      .shutter-active {
+        transform: translateY(0);
+      }
+
+      /* 冲击波白闪 */
+      .impact-flash {
+        position: fixed;
+        inset: 0;
+        background: white;
+        z-index: 200;
+        pointer-events: none;
+        opacity: 0;
+      }
+      .flash-active {
+        animation: flash-anim 0.2s ease-out forwards;
+      }
+      @keyframes flash-anim {
+        0% { opacity: 0.8; }
+        100% { opacity: 0; }
+      }
+
+      @keyframes screen-shake-heavy {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        10% { transform: translate(-8px, 12px) scale(1.02); }
+        30% { transform: translate(8px, -12px) scale(1.01); }
+        50% { transform: translate(-12px, 8px) scale(1.02); }
+        70% { transform: translate(12px, -8px) scale(1.01); }
+        90% { transform: translate(-4px, 4px) scale(1.005); }
+      }
+      .animate-impact {
+        animation: screen-shake-heavy 0.5s cubic-bezier(.36,.07,.19,.97) both;
+      }
+
+      @keyframes vision-blur-pulse {
+        0% { backdrop-filter: blur(0px) saturate(1); }
+        50% { backdrop-filter: blur(2px) saturate(0.5); }
+        100% { backdrop-filter: blur(0px) saturate(1); }
+      }
+      .animate-blur-pulse {
+        animation: vision-blur-pulse 5s infinite ease-in-out;
+      }
+
+      /* Button Attention Seekers */
+      @keyframes gleam {
+        0% { transform: translateX(-150%) skewX(-15deg); }
+        20% { transform: translateX(150%) skewX(-15deg); }
+        100% { transform: translateX(150%) skewX(-15deg); }
+      }
+      .animate-gleam {
+        animation: gleam 3s infinite linear;
+      }
+      
+      @keyframes pop-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+      .animate-pop {
+        animation: pop-pulse 2s infinite ease-in-out;
+      }
+
+      .effect-red { animation: border-pulse-red 0.5s ease-out; }
+      .effect-green { animation: border-pulse-green 0.5s ease-out; }
+      .effect-amber { animation: border-pulse-amber 0.5s ease-out; }
+
+      @keyframes fade-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-in {
+        animation: fade-in 0.4s ease-out forwards;
+      }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "vite": "https://esm.sh/vite@^7.3.1",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "@/": "./"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
