@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { GameStats, GameEvent } from '../types';
-import { RANDOM_EVENTS, RANDOM_EVENTS_EXTRA, DAILY_ACTIONS, STORY_QUESTS, HIGH_RISK_EVENTS, SUDDEN_EVENTS, SIDE_STORIES } from '../data/events';
+import { RANDOM_EVENTS, RANDOM_EVENTS_EXTRA, DAILY_ACTIONS, STORY_QUESTS, SUDDEN_EVENTS, SIDE_STORIES } from '../data/events';
 import { Wrench, X } from 'lucide-react';
 
 interface Props {
@@ -32,8 +32,7 @@ const GMPanel: React.FC<Props> = ({ stats, day, onUpdateStats, onSetDay, onTrigg
     ...SUDDEN_EVENTS,
     ...RANDOM_EVENTS,
     ...RANDOM_EVENTS_EXTRA,
-    ...DAILY_ACTIONS, 
-    ...Object.values(HIGH_RISK_EVENTS)
+    ...DAILY_ACTIONS
   ];
 
   return (

@@ -9,7 +9,7 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
         id: 'side_apprentice_1',
         chainId: 'apprentice',
         title: '师徒：初遇废柴',
-        description: '一只被遗弃的长毛猫连抓老鼠都不会。[解锁: 第2天]',
+        description: '一只被遗弃的长毛猫连抓老鼠都不会。',
         image: getImg('落魄猫咪', 'd97706'),
         type: 'SIDE_QUEST',
         allowedStages: ['STRAY'],
@@ -18,9 +18,9 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
             {
                 id: 'app_choice_teach',
                 text: '教它生存之道',
-                calculateChance: (stats) => 80,
+                calculateChance: (stats) => Math.min(95, 30 + stats.smarts * 0.5 + stats.hissing * 0.2),
                 effect: (stats) => {
-                    if (roll(80)) {
+                    if (roll(30 + stats.smarts * 0.5 + stats.hissing * 0.2)) {
                         return {
                             changes: { hissing: -2, smarts: 8, satiety: -5 },
                             message: '你分了它一点食物。它感激地叫你“师父”。',
@@ -39,9 +39,9 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
             {
                 id: 'app_choice_rob',
                 text: '抢走它的铃铛',
-                calculateChance: (stats) => 90,
+                calculateChance: (stats) => Math.min(95, 40 + stats.hissing * 0.6),
                 effect: (stats) => {
-                    if (roll(90)) {
+                    if (roll(40 + stats.hissing * 0.6)) {
                         return {
                             changes: { hissing: 5, satiety: 5 }, // Stage 1 hiss gain
                             message: '你抢走了它的名牌去换了食物。仇恨的种子已种下。',
@@ -65,7 +65,7 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
         id: 'side_apprentice_good',
         chainId: 'apprentice',
         title: '师徒：反哺',
-        description: '那个徒弟现在强壮多了，叼着鸽子等你。[解锁: 第6天 | 师徒情深]',
+        description: '那个徒弟现在强壮多了，叼着鸽子等你。',
         image: getImg('徒弟的报恩', 'fbbf24'),
         type: 'SIDE_QUEST',
         allowedStages: ['CAT_LORD'],
@@ -91,7 +91,7 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
         id: 'side_apprentice_evil',
         chainId: 'apprentice',
         title: '师徒：逆徒归来',
-        description: '一只体型巨大的长毛猫挡住了路，眼神冰冷。[解锁: 第6天 | 前世仇怨]',
+        description: '一只体型巨大的长毛猫挡住了路，眼神冰冷。',
         image: getImg('复仇之火', 'b91c1c'),
         type: 'SIDE_QUEST',
         allowedStages: ['CAT_LORD'], 
@@ -150,7 +150,7 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
         id: 'side_apprentice_mansion_good',
         chainId: 'apprentice',
         title: '师徒：守护者',
-        description: '徒弟正在窗外驱赶野狗。[解锁: 第9天 | 善缘]',
+        description: '徒弟正在窗外驱赶野狗。',
         image: getImg('守护者', '059669'),
         type: 'SIDE_QUEST',
         allowedStages: ['MANSION'],
@@ -173,9 +173,9 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
             {
                 id: 'app_choice_invite_in',
                 text: '挠门让它进来',
-                calculateChance: (stats) => 60,
+                calculateChance: (stats) => 20 + stats.smarts * 0.5,
                 effect: (stats) => {
-                    if (roll(60)) {
+                    if (roll(20 + stats.smarts * 0.5)) {
                         return {
                             changes: { hissing: 10, smarts: 2 }, // Rebellious act
                             message: '铲屎官被震慑住了，允许它进屋吃饭。',
@@ -197,7 +197,7 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
         id: 'side_apprentice_mansion_evil',
         chainId: 'apprentice',
         title: '师徒：暗夜魅影',
-        description: '逆徒正在厨房偷吃你的进口粮。[解锁: 第9天 | 恶缘]',
+        description: '逆徒正在厨房偷吃你的进口粮。',
         image: getImg('暗夜入侵', '7f1d1d'),
         type: 'SIDE_QUEST',
         allowedStages: ['MANSION'],
@@ -246,7 +246,7 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
         id: 'side_apprentice_celeb_good',
         chainId: 'apprentice',
         title: '师徒：黄金搭档',
-        description: '拍摄外景时徒弟闯入镜头。[解锁: 第13天 | 师徒连心]',
+        description: '拍摄外景时徒弟闯入镜头。',
         image: getImg('最佳拍档', 'f59e0b'),
         type: 'SIDE_QUEST',
         allowedStages: ['CELEBRITY'],
@@ -272,7 +272,7 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
         id: 'side_apprentice_celeb_evil',
         chainId: 'apprentice',
         title: '师徒：黑料曝光',
-        description: '逆徒在直播窗口外凄厉嚎叫。[解锁: 第13天 | 宿怨]',
+        description: '逆徒在直播窗口外凄厉嚎叫。',
         image: getImg('直播事故', '991b1b'),
         type: 'SIDE_QUEST',
         allowedStages: ['CELEBRITY'],
@@ -284,9 +284,9 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
             {
                 id: 'app_choice_ignore_hater',
                 text: '假装没听见',
-                calculateChance: (stats) => 50,
+                calculateChance: (stats) => 50 + stats.smarts * 0.3,
                 effect: (stats) => {
-                    if (roll(50)) {
+                    if (roll(50 + stats.smarts * 0.3)) {
                         return {
                             changes: { hissing: -5, smarts: 5 },
                             message: '你淡定的表现被称为“佛系”。逆徒叫累了走了。',

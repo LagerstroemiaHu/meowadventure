@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { GameStats, GamePhase, GameEvent, Choice, LogEntry, GameStage, Character, NightThought } from '../../types';
 import StatsDisplay from '../StatsDisplay';
@@ -43,6 +44,14 @@ const STAT_LABELS: Record<string, string> = {
   health: '健康', satiety: '饱腹', hissing: '哈气', smarts: '智力'
 };
 
+// Map to predict the next stage for the flip animation "Back" face
+const NEXT_STAGE_MAP: Record<GameStage, GameStage> = {
+    'STRAY': 'CAT_LORD',
+    'CAT_LORD': 'MANSION',
+    'MANSION': 'CELEBRITY',
+    'CELEBRITY': 'CELEBRITY' // End of line
+};
+
 const getActionIcon = (id: string, type?: string) => {
   if (type === 'STAGE') return <Flag size={12} />;
   if (type === 'SIDE_QUEST') return <Compass size={12} />;
@@ -78,10 +87,6 @@ const getEventTheme = (event: GameEvent | null) => {
     return STAT_THEME_MAP['neutral'];
 };
 
-// Font Scaling Logic Update:
-// Small (was normal)
-// Normal (was medium)
-// Large (was large)
 const getTextClasses = (scale: TextScale, type: 'log' | 'desc' | 'choice' | 'title' | 'night_title' | 'night_desc' | 'action_title' | 'footer_text' | 'locked_title' | 'locked_reason') => {
     const scales = {
         log: { small: 'text-[0.5rem] md:text-[0.65rem]', normal: 'text-[0.6rem] md:text-[0.75rem]', large: 'text-[0.7rem] md:text-[0.85rem]' },
@@ -96,6 +101,20 @@ const getTextClasses = (scale: TextScale, type: 'log' | 'desc' | 'choice' | 'tit
         locked_reason: { small: 'text-[0.4rem] md:text-[0.55rem]', normal: 'text-[0.5rem] md:text-[0.65rem]', large: 'text-[0.6rem] md:text-[0.75rem]' }
     };
     return scales[type][scale];
+};
+
+// Dynamic Avatar Resolver
+export const getStageAvatar = (char: Character | null, currentStage: GameStage) => {
+    if (char?.id === 'senior_cat') {
+        switch(currentStage) {
+            case 'STRAY': return '/pics/idle/stray.jpg';
+            case 'CAT_LORD': return '/pics/idle/cat_lord.jpg';
+            case 'MANSION': return '/pics/idle/mansion.jpg';
+            case 'CELEBRITY': return '/pics/idle/celebrity.jpg';
+            default: return '/pics/idle/stray.jpg';
+        }
+    }
+    return char?.avatar;
 };
 
 interface Props {
@@ -172,12 +191,10 @@ export const MainGame: React.FC<Props> = ({
     useEffect(() => {
         // If points decreased
         if (actionPoints < prevActionPoints.current) {
-            // The index of the point that was just lost is equal to the NEW actionPoints count
-            // Example: 3 -> 2. The point at index 2 (the 3rd one) is lost.
             setConsumingIndex(actionPoints);
             const timer = setTimeout(() => {
                 setConsumingIndex(null);
-            }, 1000); // Slower animation (1s)
+            }, 1000); 
             return () => clearTimeout(timer);
         }
         prevActionPoints.current = actionPoints;
@@ -187,9 +204,7 @@ export const MainGame: React.FC<Props> = ({
     useEffect(() => {
         if ((stats.health < 30 || stats.satiety < 20) && !muted && phase !== 'START' && phase !== 'PROLOGUE') {
             if (!heartbeatRef.current) {
-                // Initial play
                 audioManager.playSfx('heartbeat');
-                // Loop
                 heartbeatRef.current = setInterval(() => {
                     audioManager.playSfx('heartbeat');
                 }, 1500);
@@ -212,7 +227,6 @@ export const MainGame: React.FC<Props> = ({
     const currentTheme = getEventTheme(currentEvent);
     const feedbackText = eventResult ? eventResult.message : currentEvent?.description || "";
     
-    // Dynamic text classes
     const logTextClass = getTextClasses(textScale, 'log');
     const descTextClass = getTextClasses(textScale, 'desc');
     const choiceTextClass = getTextClasses(textScale, 'choice');
@@ -228,10 +242,8 @@ export const MainGame: React.FC<Props> = ({
         <div className={`fixed inset-0 flex flex-col ${STAGE_BG_MAP[displayStage]} font-sans overflow-hidden border-[4px] md:border-[6px] border-black select-none transition-all duration-1000 ${isShaking ? 'animate-shake' : ''} ${isImpactShaking ? 'animate-impact' : ''}`}>
             <div className={`impact-flash ${isFlashActive ? 'flash-active' : ''}`} />
             
-            {/* GM控制面板 */}
             <GMPanel stats={stats} day={day} onUpdateStats={onUpdateStats} onSetDay={onSetDay} onTriggerEvent={(e) => { onSetEvent(e); onSetEventResult(null); }} />
 
-            {/* 点击结果特效层 */}
             <EffectsLayer isLowHealth={stats.health < 30} isLowSatiety={stats.satiety < 20} activeEffect={activeEffect} />
 
             <header className={`h-14 md:h-16 shrink-0 bg-white border-b-[4px] md:border-b-[6px] border-black flex items-stretch z-30 shadow-md ${isImpactShaking ? 'animate-impact' : ''}`}>
@@ -256,13 +268,20 @@ export const MainGame: React.FC<Props> = ({
                     <div className={`flex-1 md:flex-[2.5] bg-white border-[4px] border-black p-1 md:p-3 shadow-[4px_4px_0px_0px_black] flex flex-col items-center justify-center overflow-hidden ${isImpactShaking ? 'animate-impact' : ''}`}>
                         <div className={`w-full aspect-square md:aspect-[3/4] border-[2px] md:border-[3px] border-black bg-stone-100 relative shadow-inner flip-container ${isStageTransitioning ? 'flip-active' : ''}`}>
                             <div className="flip-inner">
-                                <div className="flip-face flip-front">
-                                    <img src={character?.avatar} className="w-full h-full object-cover" />
+                                <div className="flip-face flip-front bg-stone-200">
+                                    <img 
+                                        src={getStageAvatar(character, stage)} 
+                                        className="w-full h-full object-cover" 
+                                        alt="Current Stage Avatar"
+                                    />
                                 </div>
-                                <div className="flip-face flip-back">
-                                    <div className="w-16 h-16 border-4 border-black rounded-full flex items-center justify-center bg-white shadow-[4px_4px_0px_0px_black]">
-                                        <Cat size={32} className="text-amber-600" />
-                                    </div>
+                                <div className="flip-face flip-back bg-amber-400">
+                                    {/* Show the predicted NEXT stage avatar on the back face during transition */}
+                                    <img 
+                                        src={getStageAvatar(character, NEXT_STAGE_MAP[stage])} 
+                                        className="w-full h-full object-cover" 
+                                        alt="Next Stage Avatar"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -317,18 +336,13 @@ export const MainGame: React.FC<Props> = ({
                              <span className="text-[0.6rem] md:text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider mr-1">Energy</span>
                              <div className="flex gap-1">
                                  {[0, 1, 2].map(index => {
-                                     // 逻辑：
-                                     // isActive: 当前点数是否包含此索引
-                                     // isConsuming: 刚刚被消耗的索引
                                      const isActive = index < actionPoints;
                                      const isConsuming = index === consumingIndex;
 
                                      return (
                                          <div key={index} className="relative w-4 h-4 md:w-5 md:h-5 flex items-center justify-center">
-                                             {/* 空槽底色 */}
                                              <Zap size={20} className="absolute text-stone-300 opacity-30 scale-90" strokeWidth={3} />
                                              
-                                             {/* 激活状态图标 */}
                                              <Zap 
                                                  size={20} 
                                                  className={`
@@ -339,7 +353,6 @@ export const MainGame: React.FC<Props> = ({
                                                  strokeWidth={2.5}
                                              />
                                              
-                                             {/* 消耗动画效果 (比原来慢) */}
                                              {isConsuming && (
                                                 <Zap 
                                                     size={20}
@@ -395,7 +408,6 @@ export const MainGame: React.FC<Props> = ({
                     <footer className={`shrink-0 text-white border-t-[4px] md:border-t-[6px] border-black p-2 md:p-4 flex flex-col gap-2 z-[60] transition-all duration-500 overflow-hidden h-auto min-h-[8rem] md:min-h-[10rem] ${phase === 'NIGHT_SUMMARY' ? 'bg-stone-900 grayscale-0 opacity-100' : currentTheme.footerBg} ${isImpactShaking ? 'animate-impact' : ''}`}>
                         {phase === 'NIGHT_SUMMARY' ? (
                             <div className="h-full flex flex-col justify-between animate-in p-1">
-                                {/* Night Thought Section */}
                                 <div className="flex-1 flex flex-col justify-center items-center text-center mb-2 md:mb-4 relative">
                                         <div className="absolute top-0 right-0 opacity-20"><Moon size={64} className="text-stone-100"/></div>
                                         {currentNightThought ? (

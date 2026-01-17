@@ -11,7 +11,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
         id: 'phil_stray_jungle',
         chainId: 'philosophy',
         title: '悟道：丛林法则',
-        description: '你和一只老猫同时发现了一块牛排。[解锁: 第2天 | 智力>15]',
+        description: '你和一只老猫同时发现了一块牛排。',
         image: getImg('丛林法则', '78350f'),
         type: 'SIDE_QUEST',
         allowedStages: ['STRAY'],
@@ -20,9 +20,9 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
             {
                 id: 'phil_choice_dominate',
                 text: '强者独食 (抢夺)',
-                calculateChance: (stats) => Math.min(95, 40 + stats.health * 0.6),
+                calculateChance: (stats) => Math.min(95, 30 + stats.health * 0.5 + stats.hissing * 0.2),
                 effect: (stats) => {
-                    if (roll(40 + stats.health * 0.6)) {
+                    if (roll(30 + stats.health * 0.5 + stats.hissing * 0.2)) {
                         return {
                             changes: { satiety: 40, hissing: 5, smarts: 5 }, // Stage 1: small hiss gain
                             message: '你打跑了它。肉很香，但有点苦。你悟出了第一条真理：垃圾桶不相信眼泪。',
@@ -52,7 +52,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
             {
                 id: 'phil_choice_overthink_1',
                 text: '思考肉的来源',
-                calculateChance: (stats) => 20,
+                calculateChance: (stats) => 20 + stats.smarts * 0.5,
                 effect: (stats) => ({
                     changes: { satiety: -10, smarts: 2, health: -5 },
                     message: '在你思考的时候，肉被狗叼走了。思考太多是会饿死的。',
@@ -70,7 +70,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
         id: 'phil_lord_contract',
         chainId: 'philosophy',
         title: '悟道：权力的本质',
-        description: '一只黑猫质疑你为什么要收鱼头。[解锁: 第6天 | 完成丛林法则]',
+        description: '一只黑猫质疑你为什么要收鱼头。',
         image: getImg('猫的王座', '581c87'),
         type: 'SIDE_QUEST',
         allowedStages: ['CAT_LORD'],
@@ -83,7 +83,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
                 id: 'phil_choice_divine_right',
                 text: '因为我最强 (君权神授)',
                 condition: (stats) => stats.hissing > 40, 
-                calculateChance: (stats) => 90,
+                calculateChance: (stats) => Math.min(95, 20 + stats.hissing * 0.7),
                 effect: (stats) => ({
                     changes: { hissing: 10, smarts: 5 }, // Stage 2: moderate hiss gain
                     message: '你一巴掌把它拍翻：“因为是我赶走了野狗。我的武力就是你们安睡的保障。”',
@@ -94,7 +94,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
             {
                 id: 'phil_choice_social_contract',
                 text: '这是一种交易 (社会契约)',
-                calculateChance: (stats) => 90,
+                calculateChance: (stats) => Math.min(90, 30 + stats.smarts * 0.6),
                 effect: (stats) => ({
                     changes: { smarts: 15, hissing: -5 },
                     message: '“你可以不交，但下次恶犬来袭时，别躲在我的身后。” 它沉默了。',
@@ -105,9 +105,9 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
             {
                 id: 'phil_choice_debate',
                 text: '和它辩论',
-                calculateChance: (stats) => 30,
+                calculateChance: (stats) => Math.min(80, 10 + stats.smarts * 0.5),
                 effect: (stats) => {
-                    if (roll(30)) {
+                    if (roll(10 + stats.smarts * 0.5)) {
                         return { changes: { smarts: 10, hissing: -5 }, message: '你用逻辑说服了它。', success: true, effectType: 'neutral' };
                     }
                     return { changes: { hissing: -10, health: -5 }, message: '它直接给了你一拳。暴力比哲学更管用。', success: false, effectType: 'damage' };
@@ -123,7 +123,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
         id: 'phil_mansion_labor',
         chainId: 'philosophy',
         title: '悟道：罐头的代价',
-        description: '铲屎官拿着逗猫棒，示意你跳圈才给罐头。[解锁: 第10天 | 完成权力本质]',
+        description: '铲屎官拿着逗猫棒，示意你跳圈才给罐头。',
         image: getImg('劳动异化', '1d4ed8'),
         type: 'SIDE_QUEST',
         allowedStages: ['MANSION'],
@@ -186,7 +186,7 @@ export const PHILOSOPHY_QUESTS: GameEvent[] = [
         id: 'phil_final_utopia',
         chainId: 'philosophy',
         title: '悟道：大同世界',
-        description: '你拥有一切。窗外是寒风中的流浪猫。[解锁: 第14天 | 完成罐头代价]',
+        description: '你拥有一切。窗外是寒风中的流浪猫。',
         image: getImg('喵特纳雄耐尔', 'be123c'),
         type: 'SIDE_QUEST',
         allowedStages: ['MANSION', 'CELEBRITY'],

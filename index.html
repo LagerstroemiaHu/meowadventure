@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -238,6 +239,23 @@
       .animate-pop {
         animation: pop-pulse 2s infinite ease-in-out;
       }
+
+      /* New Animations for Prologue Text */
+      @keyframes wiggle {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+      .animate-wiggle { animation: wiggle 0.5s ease-in-out infinite; }
+
+      @keyframes vibrate {
+        0% { transform: translate(0); }
+        20% { transform: translate(-1px, 1px); }
+        40% { transform: translate(-1px, -1px); }
+        60% { transform: translate(1px, 1px); }
+        80% { transform: translate(1px, -1px); }
+        100% { transform: translate(0); }
+      }
+      .animate-vibrate { animation: vibrate 0.2s linear infinite; }
 
       .effect-red { animation: border-pulse-red 0.5s ease-out; }
       .effect-green { animation: border-pulse-green 0.5s ease-out; }

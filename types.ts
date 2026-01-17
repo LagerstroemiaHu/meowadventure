@@ -16,6 +16,13 @@ export interface Character {
     description: string;
     avatar: string;
     initialStats: GameStats;
+    // 属性获取倍率 (例如: hissing: 1.5 表示获取哈气值时 x1.5)
+    statMultipliers: {
+        health: number;
+        satiety: number;
+        hissing: number;
+        smarts: number;
+    };
     locked?: boolean;
 }
 

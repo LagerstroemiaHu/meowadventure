@@ -8,7 +8,7 @@ import { TitleScreen } from './components/phases/TitleScreen';
 import { Prologue } from './components/phases/Prologue';
 import { Rebirth } from './components/phases/Rebirth';
 import { CharacterSelect } from './components/phases/CharacterSelect';
-import { MainGame } from './components/phases/MainGame';
+import { MainGame, getStageAvatar } from './components/phases/MainGame';
 import { EndGame } from './components/phases/EndGame';
 import { pick } from './data/utils';
 import { audioManager } from './utils/audio';
@@ -135,12 +135,33 @@ export default function App() {
     setLogs(prev => [{ day, message, type }, ...prev].slice(0, 30));
   };
 
-  const updateStats = (changes: Partial<GameStats>) => {
+  // Helper to calculate multipliers BEFORE applying stats, so UI shows real values
+  const applyCharacterMultipliers = (changes: Partial<GameStats>): Partial<GameStats> => {
+      const multipliers = character?.statMultipliers || { health: 1, satiety: 1, hissing: 1, smarts: 1 };
+      const calculatedChanges: Partial<GameStats> = {};
+
+      (Object.keys(changes) as Array<keyof GameStats>).forEach(key => {
+          if (changes[key] !== undefined) {
+              let changeVal = changes[key]!;
+              // Only multiply positive gains
+              if (changeVal > 0) {
+                  const multiplier = multipliers[key];
+                  if (multiplier) {
+                      changeVal = Math.round(changeVal * multiplier);
+                  }
+              }
+              calculatedChanges[key] = changeVal;
+          }
+      });
+      return calculatedChanges;
+  };
+
+  const updateStats = (finalChanges: Partial<GameStats>) => {
     setStats(prev => {
       const next = { ...prev };
-      (Object.keys(changes) as Array<keyof GameStats>).forEach(key => {
-        if (changes[key] !== undefined) {
-          next[key] = Math.max(0, Math.min(100, next[key] + changes[key]!));
+      (Object.keys(finalChanges) as Array<keyof GameStats>).forEach(key => {
+        if (finalChanges[key] !== undefined) {
+          next[key] = Math.max(0, Math.min(100, next[key] + finalChanges[key]!));
         }
       });
       return next;
@@ -178,7 +199,6 @@ export default function App() {
       const badges: EndingType[] = [mainEnding];
 
       // Traits
-      // (This logic is simplified for demo; ideally track positive/negative interactions)
       if (stats.smarts >= 100) badges.push('STAT_MAX_SMARTS');
       if (stats.hissing >= 100) badges.push('STAT_MAX_HISSING');
       if (stats.health >= 60 && stats.satiety >= 60 && stats.smarts >= 60 && stats.hissing >= 60) badges.push('STAT_BALANCED');
@@ -371,7 +391,7 @@ export default function App() {
   
   const handleRebirthSign = () => {
       audioManager.playSfx('page_flip');
-      setCharacter(CHARACTERS[0]); 
+      // Assume character was selected in CharacterSelect phase
       startDay(1);
   };
 
@@ -385,11 +405,13 @@ export default function App() {
     
     const allRandomEvents = [...RANDOM_EVENTS, ...RANDOM_EVENTS_EXTRA];
 
-    const validRandomEvents = allRandomEvents.filter(e => 
-      !completedEventIds.includes(e.id) && 
-      e.id !== lastRandomEventId && 
-      (!e.allowedStages || e.allowedStages.includes(stage))
-    );
+    // 修改筛选逻辑：允许同一事件最多出现 2 次
+    const validRandomEvents = allRandomEvents.filter(e => {
+        const occurrenceCount = completedEventIds.filter(id => id === e.id).length;
+        const isAllowed = !e.allowedStages || e.allowedStages.includes(stage);
+        
+        return occurrenceCount < 2 && e.id !== lastRandomEventId && isAllowed;
+    });
     
     if (validRandomEvents.length > 0) {
       const randomEvt = validRandomEvents[Math.floor(Math.random() * validRandomEvents.length)];
@@ -409,11 +431,17 @@ export default function App() {
   const handleChoice = (choice: Choice) => {
     if (phase === 'ACTION_SELECTION' && currentEvent && (currentEvent.type === 'DAILY' || currentEvent.type === 'STAGE' || currentEvent.type === 'SIDE_QUEST')) {
       setActionPoints(prev => prev - 1);
-      if (currentEvent.type === 'DAILY') setDailyActionsTaken(prev => [...prev, currentEvent.id]);
+      // 将支线任务、主线任务也加入已执行列表，防止每日无限刷
+      setDailyActionsTaken(prev => [...prev, currentEvent.id]);
     }
 
     const { changes, message, success, effectType, stageUnlock, retry, sound } = choice.effect(stats);
-    updateStats(changes);
+    
+    // IMPORTANT: Calculate ACTUAL changes using character multipliers HERE
+    // so that the result modal, logs, and state update all share the same calculated values.
+    const actualChanges = applyCharacterMultipliers(changes);
+
+    updateStats(actualChanges);
     
     if (sound) {
         audioManager.playSfx(sound as any);
@@ -471,16 +499,17 @@ export default function App() {
         }, 1150); 
     }
 
-    setEventResult({ message, success, changes });
+    // Pass the multiplied changes to event result so the modal shows correct numbers
+    setEventResult({ message, success, changes: actualChanges });
     addLog(message, success ? 'success' : 'danger');
     
-    if (changes.health && changes.health < 0) {
+    if (actualChanges.health && actualChanges.health < 0) {
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), 250);
       setActiveEffect({ type: 'damage', color: 'red' });
-    } else if (effectType === 'heal' || (changes.health && changes.health > 0)) {
+    } else if (effectType === 'heal' || (actualChanges.health && actualChanges.health > 0)) {
       setActiveEffect({ type: 'heal', color: 'green' });
-    } else if (changes.satiety && changes.satiety > 0) {
+    } else if (actualChanges.satiety && actualChanges.satiety > 0) {
       setActiveEffect({ type: 'eat', color: 'amber' });
     } else if (effectType === 'sleep') {
       setActiveEffect({ type: 'sleep', color: 'indigo' });
@@ -532,7 +561,8 @@ export default function App() {
       audioManager.playClick();
       setPhase('START');
       setDay(1);
-      setStats(CHARACTERS[0].initialStats);
+      // 保持当前选择的角色重新开始
+      setStats(character ? character.initialStats : CHARACTERS[0].initialStats);
       setStage('STRAY');
       setCompletedEventIds([]);
       setCompletedAt({});
@@ -557,7 +587,8 @@ export default function App() {
 
   const allPotentialActions = [
       ...STORY_QUESTS.filter((q, i) => i === currentQuestIndex && !completedEventIds.includes(q.id)),
-      ...SIDE_STORIES.filter(s => !completedEventIds.includes(s.id) && (!s.allowedStages || s.allowedStages.includes(stage))),
+      // Side Stories: 过滤条件增加 !dailyActionsTaken.includes(s.id)，保证当天执行过(无论成败)不再显示
+      ...SIDE_STORIES.filter(s => !completedEventIds.includes(s.id) && !dailyActionsTaken.includes(s.id) && (!s.allowedStages || s.allowedStages.includes(stage))),
       ...DAILY_ACTIONS.filter(a => (!a.allowedStages || a.allowedStages.includes(stage)) && (!a.excludedStages || !a.excludedStages.includes(stage)))
   ];
 
@@ -609,7 +640,7 @@ export default function App() {
                 <div className="space-y-3">
                   <div className="text-center mb-6">
                       <div className="inline-block border-4 border-black p-2 bg-stone-100 mb-2">
-                          <img src={character?.avatar} className="w-16 h-16 object-cover grayscale" />
+                          <img src={getStageAvatar(character, stage)} className="w-16 h-16 object-cover grayscale" />
                       </div>
                       <p className="font-black text-lg">第 {day} 天</p>
                       <p className="text-xs font-bold text-stone-500 uppercase">{stage}</p>
@@ -692,21 +723,40 @@ export default function App() {
     <div className="w-full h-screen bg-stone-900 overflow-hidden font-sans text-stone-900 select-none">
       {phase === 'START' && <TitleScreen onStart={handleStartGame} onContinue={continueLatestGame} onGallery={() => setViewGallery(true)} />}
       
-      {phase === 'PROLOGUE' && <Prologue onComplete={() => {
+      {phase === 'PROLOGUE' && <Prologue 
+        onBack={() => {
+            audioManager.playClick();
+            setPhase('START');
+        }}
+        onComplete={() => {
            localStorage.setItem('cat_prologue_seen', 'true');
            setPhase('CHARACTER_SELECT');
       }} />}
 
       {phase === 'CHARACTER_SELECT' && (
-          <CharacterSelect characters={CHARACTERS} onSelect={(char) => {
+          <CharacterSelect 
+            characters={CHARACTERS} 
+            onSelect={(char) => {
               setCharacter(char);
               setStats(char.initialStats);
               setPhase('REBIRTH');
-          }} />
+            }} 
+            onBack={() => {
+                audioManager.playClick();
+                setPhase('START');
+            }}
+          />
       )}
 
       {phase === 'REBIRTH' && character && (
-          <Rebirth character={character} onSign={handleRebirthSign} />
+          <Rebirth 
+            character={character} 
+            onSign={handleRebirthSign} 
+            onBack={() => { 
+                audioManager.playClick(); 
+                setPhase('CHARACTER_SELECT'); 
+            }}
+          />
       )}
 
       {(phase === 'MORNING_EVENT' || phase === 'ACTION_SELECTION' || phase === 'EVENT_RESOLUTION' || phase === 'NIGHT_SUMMARY') && (

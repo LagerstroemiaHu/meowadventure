@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { GameEvent, Choice, GameStats, StatType } from '../types';
 import { X, ArrowRight, Skull, CheckCircle2, Heart, Fish, Zap, Brain, AlertTriangle, Compass } from 'lucide-react';
@@ -13,7 +12,7 @@ interface Props {
   onClose: () => void;
 }
 
-const StatBadge = ({ stat, value }: { stat: string, value: number }) => {
+const StatBadge: React.FC<{ stat: string, value: number }> = ({ stat, value }) => {
     if (value === 0) return null;
     const isPos = value > 0;
     const colors: Record<string, string> = {

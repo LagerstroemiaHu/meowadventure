@@ -7,7 +7,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
   {
     id: 'nap',
     title: '睡大觉',
-    description: '耄耋老猫最重要的事情就是睡觉。你可以选择深度睡眠来恢复体力，或者浅尝辄止。',
+    description: '不论是称霸街头还是统治豪宅，充足的睡眠都是力量的来源。',
     image: getImg('睡大觉', '1e1b4b'),
     type: 'DAILY',
     hints: [{ stat: '健康', change: 'up' }, { stat: '饱腹', change: 'down' }],
@@ -19,15 +19,15 @@ export const DAILY_ACTIONS: GameEvent[] = [
             effect: (stats) => {
                 if (roll(90)) {
                     const msg = pick([
-                        '你梦见自己回到了童年，在温暖的阳光下无忧无虑。健康得到了显著恢复。',
-                        '这觉睡得昏天黑地，醒来后感觉年轻了三岁。圆头看起来更有光泽了。',
-                        '你找到了一个完美的避风港，静谧的睡眠治愈了你所有的旧伤。'
+                        '你梦见自己回到了食物链的顶端。在梦里，你无所不能。健康得到了显著恢复。',
+                        '这觉睡得昏天黑地，醒来后感觉精力充沛。毛发看起来更有光泽了。',
+                        '你找到了一个完美的避风港，静谧的睡眠治愈了你所有的疲惫。'
                     ]);
                     return { changes: { health: 12, satiety: -8 }, message: msg, success: true, effectType: 'sleep' };
                 }
                 const failMsg = pick([
                     '你刚进入深度睡眠，就被一阵刺耳的喇叭声惊醒。不仅没休息好，心脏还怦怦跳。',
-                    '你在睡梦中翻了个身，不小心掉进了旁边的水坑里，浑身湿透。',
+                    '你在睡梦中翻了个身，不小心掉进了旁边的水坑/地板缝里，狼狈不堪。',
                     '有一只讨厌的蚊子一直绕着你的耳朵转，这觉睡得异常痛苦。'
                 ]);
                 return { changes: { health: -5, satiety: -5 }, message: failMsg, success: false, effectType: 'damage', sound: 'fail' };
@@ -40,14 +40,14 @@ export const DAILY_ACTIONS: GameEvent[] = [
             effect: (stats) => {
                 if (roll(98)) {
                     const msg = pick([
-                        '你眯着眼观察周围，同时给老骨头充了点电。这种半梦半醒的状态最安全。',
+                        '你眯着眼观察周围，同时给身体充了点电。这种半梦半醒的状态最安全。',
                         '只是打了个盹，你就恢复了精神。随时准备应对突发状况。',
                         '这种偷闲的快感让你的心情变好了，虽然恢复不多但胜在稳妥。'
                     ]);
                     return { changes: { health: 5, satiety: -2 }, message: msg, success: true, effectType: 'heal' };
                 }
                 const failMsg = pick([
-                    '哪怕是打盹，你也被落下的树叶惊飞了。老猫的神经果然还是太紧张。',
+                    '哪怕是打盹，你也被落下的树叶惊飞了。流浪的神经果然还是太紧张。',
                     '你的脖子睡僵了，现在歪着头看起来像是在装可爱。',
                     '由于睡姿不对，你的腿麻了，站起来的时候像个醉汉。'
                 ]);
@@ -59,14 +59,14 @@ export const DAILY_ACTIONS: GameEvent[] = [
   {
     id: 'observe_human',
     title: '观察人类',
-    description: '人类是种奇怪的生物。通过观察他们，你可以获得关于这个世界的深刻理解。',
+    description: '人类是种奇怪的生物。通过观察他们，你可以提升智慧，或者通过模仿变蠢。',
     image: getImg('观察人类', '1e3a8a'),
     type: 'DAILY',
-    hints: [{ stat: '智力', change: 'up' }],
+    hints: [{ stat: '智力', change: 'up' }, { stat: '智力', change: 'down' }],
     choices: [
         {
             id: 'philosophical_study',
-            text: '哲学思考',
+            text: '研究逻辑 (智力+)',
             calculateChance: (stats) => Math.min(95, 30 + stats.smarts * 0.7),
             effect: (stats) => {
                 if (roll(30 + stats.smarts * 0.7)) {
@@ -86,24 +86,16 @@ export const DAILY_ACTIONS: GameEvent[] = [
             }
         },
         {
-            id: 'imitate_behavior',
-            text: '尝试模仿',
-            calculateChance: (stats) => Math.min(95, 40 + stats.smarts * 0.5),
+            id: 'imitate_silly',
+            text: '模仿傻事 (智力-)',
+            calculateChance: (stats) => 100,
             effect: (stats) => {
-                if (roll(40 + stats.smarts * 0.5)) {
-                    const msg = pick([
-                        '你尝试像人类一样坐着，结果吸引了一个路人。他觉得你很有灵性，给了你两块饼干。',
-                        '你模仿人类点头打招呼，成功骗到了不少关注。社交能力+1。',
-                        '你学会了如何用无辜的眼神看着自动门，它居然为你打开了！'
-                    ]);
-                    return { changes: { smarts: 3, satiety: 5 }, message: msg, success: true, effectType: 'heal', sound: 'meow' };
-                }
-                const failMsg = pick([
-                    '你试图学人类走路，结果在大庭广众之下摔了个狗吃屎。太丢猫了！',
-                    '模仿失败，看起来像是在发疯。路人纷纷避开你，还说这猫是不是病了。',
-                    '你的腿太短了，无论怎么模仿看起来都只是一只在打滚的圆头猫。'
+                const msg = pick([
+                    '你学着人类的样子追自己的尾巴。虽然智商看起来下降了，但心情变好了。',
+                    '你试图直立行走，结果摔得很滑稽。通过放弃思考，你获得了快乐。',
+                    '你对着空气打了一套王八拳。放弃理智的感觉真好。'
                 ]);
-                return { changes: { smarts: -2, hissing: -5 }, message: failMsg, success: false, effectType: 'neutral', sound: 'fail' };
+                return { changes: { smarts: -5, health: 3, satiety: -2 }, message: msg, success: true, effectType: 'heal' };
             }
         }
     ]
@@ -111,7 +103,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
   {
     id: 'groom',
     title: '舔猫毛',
-    description: '清洁是猫的尊严。尤其是你那颗著名的圆头，必须时刻保持光鲜亮丽。',
+    description: '清洁是猫的尊严。必须时刻保持光鲜亮丽，这是强者的修养。',
     image: getImg('舔猫毛', 'ec4899'),
     type: 'DAILY',
     hints: [{ stat: '哈气', change: 'up' }, { stat: '健康', change: 'up' }],
@@ -123,8 +115,8 @@ export const DAILY_ACTIONS: GameEvent[] = [
             effect: (stats) => {
                 if (roll(90)) {
                     const msg = pick([
-                        '从耳尖到尾尖，你每一根毛都顺滑如丝。你感觉自己散发着成熟老猫的魅力。',
-                        '全套洗护完成！你现在的圆头简直可以去拍猫粮广告，哈气值上涨。',
+                        '从耳尖到尾尖，你每一根毛都顺滑如丝。你感觉自己散发着大佬的魅力。',
+                        '全套洗护完成！你现在看起来简直可以去拍猫粮广告，哈气值上涨。',
                         '这种自律让你感到自豪。你找回了当年作为“街区第一帅猫”的感觉。'
                     ]);
                     return { changes: { health: 5, hissing: 4, smarts: 2 }, message: msg, success: true, effectType: 'heal' };
@@ -132,26 +124,26 @@ export const DAILY_ACTIONS: GameEvent[] = [
                 const failMsg = pick([
                     '你不小心吞下了太多猫毛。现在你一直在干呕，感觉胃里结了个大球。',
                     '舔到一半被雨淋了，现在的你看起来像一只刚从洗衣机里出来的抹布。',
-                    '由于太用力，你把自己舔秃了一小块。这圆头现在有个缺口了！'
+                    '由于太用力，你把自己舔秃了一小块。太尴尬了！'
                 ]);
                 return { changes: { health: -5, hissing: -5 }, message: failMsg, success: false, effectType: 'damage' };
             }
         },
         {
             id: 'focus_round_head',
-            text: '维持圆头形象',
+            text: '重点打理头部',
             calculateChance: (stats) => 95,
             effect: (stats) => {
                 if (roll(95)) {
                     const msg = pick([
-                        '你精准地打理了头顶的毛发。完美，依旧是那个让无数猫咪仰望的圆头耄耋。',
-                        '只要头够圆，世界就没法打败我。你感觉自信心爆棚。',
+                        '你精准地打理了头顶的毛发。完美，依旧是那个让无数猫咪仰望的大佬。',
+                        '只要头够圆/亮，世界就没法打败我。你感觉自信心爆棚。',
                         '简单的打理让你看起来神清气爽。这种优雅是骨子里透出来的。'
                     ]);
                     return { changes: { hissing: 3, smarts: 2 }, message: msg, success: true, effectType: 'neutral' };
                 }
                 const failMsg = pick([
-                    '怎么弄都没法弄圆，你开始怀疑是不是最近翻垃圾桶吃胖了。',
+                    '怎么弄都不满意，你开始怀疑是不是最近翻垃圾桶吃胖了。',
                     '你发现了一根白胡须，这让你意识到岁月的残酷。心情大减。',
                     '你在打理时被一个小孩摸了一把，刚梳好的造型全毁了。'
                 ]);
@@ -165,52 +157,44 @@ export const DAILY_ACTIONS: GameEvent[] = [
   {
     id: 'hiss_training',
     title: '街角练胆',
-    description: '在没人的巷子口对着墙根练习哈气。找回作为猎食者的尊严。',
+    description: '你可以练习如何更凶狠（增加哈气），或者练习如何变得温顺（减少哈气）。',
     image: getImg('哈气训练', '4c1d95'),
     type: 'DAILY',
-    hints: [{ stat: '哈气', change: 'up' }, { stat: '智力', change: 'up' }],
+    hints: [{ stat: '哈气', change: 'up' }, { stat: '哈气', change: 'down' }],
     allowedStages: ['STRAY'],
     choices: [
         {
             id: 'wild_roar',
-            text: '野性咆哮',
+            text: '练习咆哮 (哈气+)',
             calculateChance: (stats) => Math.min(95, 40 + stats.health * 0.5),
             effect: (stats) => {
                 if (roll(40 + stats.health * 0.5)) {
                     const msg = pick([
-                        '你发出了极具威慑力的哈气声，连路过的野狗都被惊动了。',
+                        '你发出了极具威慑力的哈气声，连路过的野狗都被惊动了。野性+。',
                         '你弓起脊背，感受到了血液中的野性在苏醒。',
                         '你的眼神变得犀利。现在的你，不再是那个只会被驱赶的弱者。'
                     ]);
                     return { changes: { hissing: 5, smarts: 2, satiety: -5 }, message: msg, success: true, effectType: 'neutral', sound: 'hiss' };
                 }
                 const failMsg = pick([
-                    '你用力过猛，差点把自己呛到。老猫的嗓子果然还是太脆了。',
+                    '你用力过猛，差点把自己呛到。嗓子果然还是太久没用了。',
                     '哈到一半打了个喷嚏，野性全无。',
-                    '被路过的清洁大妈笑话了：“这老猫怎么一惊一乍的？”'
+                    '被路过的清洁大妈笑话了：“这猫怎么一惊一乍的？”'
                 ]);
                 return { changes: { hissing: -2, satiety: -2 }, message: failMsg, success: false, effectType: 'neutral' };
             }
         },
         {
-            id: 'shadow_box',
-            text: '对着影子格斗',
-            calculateChance: (stats) => Math.min(95, 30 + stats.smarts * 0.6),
+            id: 'practice_purr',
+            text: '练习夹子音 (哈气-)',
+            calculateChance: (stats) => 100,
             effect: (stats) => {
-                if (roll(30 + stats.smarts * 0.6)) {
-                    const msg = pick([
-                        '你观察影子的移动，预判了“敌人”的出招。智商与野性的双重飞跃。',
-                        '通过与虚空斗智斗勇，你掌握了更好的发力技巧。',
-                        '你甚至在墙上抓出了三道深深的痕迹。'
-                    ]);
-                    return { changes: { hissing: 4, smarts: 4, satiety: -5 }, message: msg, success: true, effectType: 'neutral', sound: 'hiss' };
-                }
-                const failMsg = pick([
-                    '你被自己的影子吓了一跳，狼狈地跳进了水沟。',
-                    '头太圆了，转弯时由于重心不稳摔了个底朝天。',
-                    '还没开打就累得气喘吁吁。'
+                const msg = pick([
+                    '你对着空气练习“喵~”。声音软糯，你自己都起鸡皮疙瘩了。野性大幅下降。',
+                    '你尝试收起獠牙，做出无辜的表情。为了生存，不寒碜。',
+                    '你学会了如何用头蹭空气。这是家猫的必修课。'
                 ]);
-                return { changes: { health: -2, satiety: -5 }, message: failMsg, success: false, effectType: 'damage', sound: 'fail' };
+                return { changes: { hissing: -5, smarts: 2, satiety: -2 }, message: msg, success: true, effectType: 'neutral', sound: 'meow' };
             }
         }
     ]
@@ -331,7 +315,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
             text: '极限跑酷',
             calculateChance: (stats) => Math.min(85, 30 + stats.health * 0.6),
             effect: (stats) => {
-                if (stats.health < 30) return { changes: { health: -15 }, message: '你的老骨头承受不住这种强度，摔得很惨。', success: false, effectType: 'damage', sound: 'impact' };
+                if (stats.health < 30) return { changes: { health: -15 }, message: '你的身体承受不住这种强度，摔得很惨。', success: false, effectType: 'damage', sound: 'impact' };
                 if (roll(30 + stats.health * 0.6)) {
                     const msg = pick([
                         '你在围墙间飞跃，感觉自己像一只飞鼠！',
@@ -341,7 +325,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                     return { changes: { health: 6, satiety: -10, hissing: 3 }, message: msg, success: true, effectType: 'neutral' };
                 }
                 const failMsg = pick([
-                    '步子迈大了，扯到了蛋（并没有）。你摔了下来。',
+                    '步子迈大了，扯到了...总之你摔了下来。',
                     '爪子没抓稳，从墙头滑落，掉进了泥坑。',
                     '跳跃途中被一只鸟吓了一跳，落地姿势很难看。'
                 ]);
@@ -356,7 +340,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                 if (roll(95)) {
                     const msg = pick([
                         '你做了一套广播体操。虽然不帅，但很舒服。',
-                        '拉伸了一下老腰，感觉经络通畅了。',
+                        '拉伸了一下身体，感觉经络通畅了。',
                         '简单地磨了磨爪子，伸了个腰。'
                     ]);
                     return { changes: { health: 3, satiety: -2 }, message: msg, success: true, effectType: 'heal' };
@@ -374,7 +358,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
   {
     id: 'beg_human',
     title: '路边乞讨',
-    description: '不需要体力，只需要抛弃尊严。用软绵绵的叫声换取食物。',
+    description: '不需要体力，只需要抛弃尊严。这种行为会让你的野性（哈气）大幅降低。',
     image: getImg('路边乞讨', '4f46e5'),
     type: 'DAILY',
     hints: [{ stat: '饱腹', change: 'up' }, { stat: '哈气', change: 'down' }],
@@ -427,7 +411,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
   {
     id: 'fight_stray',
     title: '争抢地盘',
-    description: '那只独耳猫越界了。你可以选择暴力驱逐或者威慑。',
+    description: '那只独耳猫越界了。你可以选择暴力驱逐（增加哈气）或者威慑。',
     image: getImg('地盘争夺', 'b91c1c'),
     type: 'DAILY',
     hints: [{ stat: '哈气', change: 'up' }, { stat: '健康', change: 'down' }],
@@ -435,12 +419,12 @@ export const DAILY_ACTIONS: GameEvent[] = [
     choices: [
         {
             id: 'fight_hard',
-            text: '全力出击',
+            text: '全力出击 (哈气+)',
             calculateChance: (stats) => Math.min(90, 40 + stats.health * 0.5),
             effect: (stats) => {
                 if(roll(40 + stats.health * 0.5)) {
                     const msg = pick([
-                        '你把对方打跑了。这片垃圾桶是你的了！',
+                        '你把对方打跑了。这片垃圾桶是你的了！野性大增！',
                         '一阵猫毛乱飞，你骑在它身上取得了胜利。',
                         '你咬住了它的耳朵，它惨叫着逃窜。你也受了点皮外伤。'
                     ]);
@@ -455,24 +439,16 @@ export const DAILY_ACTIONS: GameEvent[] = [
             }
         },
         {
-            id: 'hiss_warning',
-            text: '低吼警告',
-            calculateChance: (stats) => Math.min(80, 20 + stats.smarts * 0.7),
+            id: 'ignore_weak',
+            text: '放它一马 (哈气-)',
+            calculateChance: (stats) => 100,
             effect: (stats) => {
-                if(roll(20 + stats.smarts * 0.7)) {
-                    const msg = pick([
-                        '你发出了低沉的吼声，对方犹豫了一下离开了。',
-                        '你炸毛的样子像个海胆，成功吓退了对手。',
-                        '眼神杀。对方感受到了你的杀气，识趣地走开了。'
-                    ]);
-                    return { changes: { hissing: 3 }, message: msg, success: true, effectType: 'neutral', sound: 'hiss' };
-                }
-                const failMsg = pick([
-                    '它根本不怕你，反而冲上来咬了你一口。',
-                    '你的吼声破音了，对方发出了嘲笑。',
-                    '虚张声势被识破，你不得不狼狈逃跑。'
+                const msg = pick([
+                    '你看了它一眼，懒得动。对方以为你不屑一顾，灰溜溜走了。',
+                    '和平共处吧。你今天的杀心不重。',
+                    '你甚至让出了半个垃圾桶。你的心变软了。'
                 ]);
-                return { changes: { hissing: -5, health: -2 }, message: failMsg, success: false, effectType: 'damage', sound: 'fail' };
+                return { changes: { hissing: -3, smarts: 2 }, message: msg, success: true, effectType: 'neutral' };
             }
         }
     ]
@@ -485,7 +461,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
       description: '向小弟索要食物。这能快速填饱肚子，但如果手段太强硬可能会受伤。',
       image: getImg('收保护费', '581c87'),
       type: 'DAILY',
-      hints: [{ stat: '哈气', change: 'up' }, { stat: '饱腹', change: 'up' }],
+      hints: [{ stat: '饱腹', change: 'up' }, { stat: '哈气', change: 'up' }], // Prioritize Satiety
       allowedStages: ['CAT_LORD'],
       choices: [
           {
@@ -535,15 +511,15 @@ export const DAILY_ACTIONS: GameEvent[] = [
   {
       id: 'judge_minions',
       title: '圆桌会议',
-      description: '消耗脑力来解决小弟们的纠纷。虽然不能直接填饱肚子，但能提升智慧。',
+      description: '消耗脑力来解决小弟们的纠纷。你可以选择公正裁决（增加智力）或者摆烂（减少智力）。',
       image: getImg('圆桌会议', '1e3a8a'),
       type: 'DAILY',
-      hints: [{ stat: '智力', change: 'up' }],
+      hints: [{ stat: '智力', change: 'up' }, { stat: '智力', change: 'down' }],
       allowedStages: ['CAT_LORD'],
       choices: [
           {
               id: 'wise_choice',
-              text: '公正裁决',
+              text: '公正裁决 (智力+)',
               calculateChance: (stats) => Math.min(90, 30 + stats.smarts * 0.7),
               effect: (stats) => {
                   if(roll(30 + stats.smarts * 0.7)) {
@@ -563,24 +539,16 @@ export const DAILY_ACTIONS: GameEvent[] = [
               }
           },
           {
-              id: 'sleep_meeting',
-              text: '会上睡觉',
-              calculateChance: (stats) => 90,
+              id: 'random_verdict',
+              text: '随缘判决 (智力-)',
+              calculateChance: (stats) => 100,
               effect: (stats) => {
-                  if (roll(90)) {
-                      const msg = pick([
-                          '“老大的沉默一定是别有深意。”它们这样自我迪化。',
-                          '你的呼噜声让大家都平静了下来。',
-                          '因为你睡着了，会议被迫取消。和平降临。'
-                      ]);
-                      return { changes: { smarts: -2, health: 5, hissing: 2 }, message: msg, success: true, effectType: 'sleep' };
-                  }
-                  const failMsg = pick([
-                      '你在会上流了口水，威严扫地。',
-                      '一只年轻的猫趁你睡觉偷袭了你。',
-                      '大家看你睡着了，一哄而散，把你孤零零丢在原地。'
+                  const msg = pick([
+                      '你转了个身，尾巴指着谁谁就赢。大家觉得这是神的旨意。',
+                      '你打了哈欠，示意大家散会。无为而治。',
+                      '你把两边的猫都打了一顿。问题解决了。'
                   ]);
-                  return { changes: { hissing: -5 }, message: failMsg, success: false, effectType: 'neutral' };
+                  return { changes: { smarts: -2, hissing: 3 }, message: msg, success: true, effectType: 'neutral' };
               }
           }
       ]
@@ -588,15 +556,15 @@ export const DAILY_ACTIONS: GameEvent[] = [
   {
       id: 'patrol_turf',
       title: '巡视领地',
-      description: '在领地边缘游走。这需要消耗饱腹感来维持你的统治力。',
+      description: '在领地边缘游走。你可以强化你的气味（增加哈气）或者只是随便看看（减少哈气）。',
       image: getImg('巡视领地', '059669'),
       type: 'DAILY',
-      hints: [{ stat: '哈气', change: 'up' }],
+      hints: [{ stat: '哈气', change: 'up' }, { stat: '哈气', change: 'down' }],
       allowedStages: ['CAT_LORD'],
       choices: [
           {
               id: 'mark_turf',
-              text: '标记地盘',
+              text: '疯狂标记 (哈气+)',
               calculateChance: (stats) => 90,
               effect: (stats) => {
                   if (roll(90)) {
@@ -616,23 +584,18 @@ export const DAILY_ACTIONS: GameEvent[] = [
               }
           },
           {
-              id: 'lazy_patrol',
-              text: '随便逛逛',
+              id: 'friendly_patrol',
+              text: '温和巡视 (哈气-)',
               effect: (stats) => {
                   if (roll(95)) {
                       const msg = pick([
-                          '你只是象征性地走了一圈，把更多时间花在了晒太阳上。',
-                          '你坐在高处俯视领地。只要你出现，就足够了。',
-                          '走到一半你就累了，找个草丛睡了一觉。'
+                          '你对过路的小猫点了点头。它们觉得你很亲切。',
+                          '你没有驱赶那只新来的小猫，反而和它碰了碰鼻子。',
+                          '你坐在高处晒太阳，收敛了杀气。'
                       ]);
-                      return { changes: { satiety: -2, hissing: 2 }, message: msg, success: true, effectType: 'neutral' };
+                      return { changes: { hissing: -3, smarts: 1 }, message: msg, success: true, effectType: 'neutral' };
                   }
-                  const failMsg = pick([
-                      '你在巡视时迷路了一小会儿，被小弟看见了。',
-                      '什么也没干就回来了，大家觉得你很敷衍。',
-                      '走到一半被雨淋成了落汤鸡。'
-                  ]);
-                  return { changes: { hissing: -2 }, message: failMsg, success: false, effectType: 'neutral' };
+                  return { changes: { hissing: -1 }, message: '你太温和了，有只猫甚至想骑到你头上。', success: false, effectType: 'neutral' };
               }
           }
       ]
@@ -693,17 +656,70 @@ export const DAILY_ACTIONS: GameEvent[] = [
       ]
   },
   {
+      id: 'costume_shoot',
+      title: '变装拍摄',
+      description: '穿上各种奇怪的衣服拍照。为了艺术（和罐头）。',
+      image: getImg('变装拍摄', '8b5cf6'),
+      type: 'DAILY',
+      hints: [{ stat: '饱腹', change: 'up' }, { stat: '哈气', change: 'up' }], // Prioritize Satiety
+      allowedStages: ['CELEBRITY'],
+      choices: [
+          {
+              id: 'cooperate',
+              text: '配合拍摄',
+              calculateChance: (stats) => Math.min(90, 30 + stats.smarts * 0.5),
+              effect: (stats) => {
+                  if (roll(50)) {
+                      const msg = pick([
+                          '这套女仆装虽然羞耻，但报酬丰厚。',
+                          '你穿上了小西装，看起来像个猫届CEO。',
+                          '虽然帽子有点紧，但你为了艺术忍了。'
+                      ]);
+                      return { changes: { satiety: 15, smarts: 2 }, message: msg, success: true, effectType: 'neutral', sound: 'shutter' };
+                  }
+                  const failMsg = pick([
+                      '你撕碎了衣服。我不做猫了！',
+                      '你死活不肯戴那个蝴蝶结，拍摄被迫取消。',
+                      '你在镜头前露出了一脸嫌弃，摄影师很难办。'
+                  ]);
+                  return { changes: { hissing: 5 }, message: failMsg, success: false, effectType: 'damage', sound: 'hiss' };
+              }
+          },
+          {
+              id: 'rebel',
+              text: '罢工抗议',
+              calculateChance: (stats) => 90,
+              effect: (stats) => {
+                   if (roll(90)) {
+                       const msg = pick([
+                           '你钻进了更衣室的柜底死活不出来。拍摄取消。',
+                           '你对着镜头展示了菊花。这是无声的抗议。',
+                           '你趁乱叼走了道具火腿肠，然后跑路了。'
+                       ]);
+                       return { changes: { hissing: 4, satiety: 5 }, message: msg, success: true, effectType: 'neutral' };
+                   }
+                   const failMsg = pick([
+                       '你被强行按住拍了几张照片，心情极差。',
+                       '你想跑，但是被经纪人抓住了后颈皮。',
+                       '抗议无效，今天的罐头也没了。'
+                   ]);
+                   return { changes: { hissing: -5, satiety: -5 }, message: failMsg, success: false, effectType: 'damage' };
+              }
+          }
+      ]
+  },
+  {
       id: 'destroy_furniture',
       title: '装修计划',
-      description: '消耗体力来破坏家具。这能极大地释放野性，但可能惹怒铲屎官。',
+      description: '消耗体力来破坏家具。你可以选择释放野性（增加哈气）或者使用猫抓板（减少哈气）。',
       image: getImg('破坏家具', 'b91c1c'),
       type: 'DAILY',
-      hints: [{ stat: '哈气', change: 'up' }],
+      hints: [{ stat: '哈气', change: 'up' }, { stat: '哈气', change: 'down' }],
       allowedStages: ['MANSION'],
       choices: [
           {
               id: 'shred_it',
-              text: '疯狂抓挠',
+              text: '疯狂抓挠 (哈气+)',
               calculateChance: (stats) => Math.min(95, 50 + stats.hissing * 0.5),
               effect: (stats) => {
                   if (roll(50 + stats.hissing * 0.5)) {
@@ -724,16 +740,16 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
             id: 'scratch_post',
-            text: '用猫抓板',
+            text: '用猫抓板 (哈气-)',
             calculateChance: (stats) => 95,
             effect: (stats) => {
                  if (roll(95)) {
                      const msg = pick([
-                         '还是猫抓板安全。你磨了磨指甲。',
-                         '虽然手感不如真皮沙发，但至少不会挨骂。',
+                         '还是猫抓板安全。你磨了磨指甲，情绪稳定了。',
+                         '虽然手感不如真皮沙发，但至少不会挨骂。做个乖宝宝。',
                          '你把猫抓板抓得雪花纷飞，解压神器。'
                      ]);
-                     return { changes: { health: 2, satiety: -2 }, message: msg, success: true, effectType: 'heal' };
+                     return { changes: { health: 2, satiety: -2, hissing: -3 }, message: msg, success: true, effectType: 'heal' };
                  }
                  const failMsg = pick([
                      '猫抓板被你抓坏了，没有备用的。不爽。',
@@ -801,15 +817,15 @@ export const DAILY_ACTIONS: GameEvent[] = [
   {
       id: 'window_tv',
       title: '窗外观鸟',
-      description: '看着窗外的鸟飞来飞去，虽然抓不到，但很有趣。',
+      description: '看着窗外的鸟。你可以认真学习（智力+）或者只是发出怪叫（智力-）。',
       image: getImg('窗外观鸟', '0ea5e9'),
       type: 'DAILY',
-      hints: [{ stat: '智力', change: 'up' }],
+      hints: [{ stat: '智力', change: 'up' }, { stat: '智力', change: 'down' }],
       allowedStages: ['MANSION'],
       choices: [
           {
               id: 'watch',
-              text: '认真观察',
+              text: '学习飞行轨迹 (智力+)',
               calculateChance: (stats) => 90,
               effect: (stats) => {
                   if (roll(90)) {
@@ -830,16 +846,16 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
               id: 'chatter',
-              text: '咔咔叫',
+              text: '无能狂怒 (智力-)',
               calculateChance: (stats) => 90,
               effect: (stats) => {
                   if (roll(90)) {
                       const msg = pick([
-                          '你对着窗户发出了狩猎的声音。',
-                          '咔咔咔...你的牙齿在打颤，这是本能的呼唤。',
-                          '虽然隔着玻璃，但你的气势已经杀死了那只鸟。'
+                          '你对着窗户发出了狩猎的声音。虽然看起来很蠢，但很有气势。',
+                          '咔咔咔...你的牙齿在打颤，大脑一片空白，只有本能。',
+                          '你试图穿过玻璃去抓鸟，撞到了头。'
                       ]);
-                      return { changes: { hissing: 2, satiety: -2 }, message: msg, success: true, effectType: 'neutral', sound: 'hiss' };
+                      return { changes: { smarts: -2, hissing: 2, satiety: -2 }, message: msg, success: true, effectType: 'neutral', sound: 'hiss' };
                   }
                   const failMsg = pick([
                       '你叫得太大声，把鸟吓跑了。',
@@ -927,7 +943,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                       return { changes: { health: 2, hissing: -2 }, message: msg, success: true, effectType: 'heal' };
                   }
                   const failMsg = pick([
-                      '你太胖了，卡在了箱子口。',
+                      '你太圆润了，卡在了箱子口。',
                       '箱子太小，你在里面转不过身。',
                       '箱子有股奇怪的味道，你待不下去。'
                   ]);
@@ -957,20 +973,18 @@ export const DAILY_ACTIONS: GameEvent[] = [
           }
       ]
   },
-
-  // ===================== CELEBRITY STAGE (Stage 4) =====================
   {
       id: 'live_stream',
       title: '直播互动',
-      description: '打开摄像头，和粉丝们聊聊天（喵喵叫）。',
+      description: '打开摄像头。你可以认真营业（智力+）或者直播睡觉（智力-）。',
       image: getImg('直播互动', 'ec4899'),
       type: 'DAILY',
-      hints: [{ stat: '智力', change: 'up' }],
+      hints: [{ stat: '智力', change: 'up' }, { stat: '智力', change: 'down' }],
       allowedStages: ['CELEBRITY'],
       choices: [
           {
               id: 'meow_talk',
-              text: '喵喵访谈',
+              text: '喵喵访谈 (智力+)',
               calculateChance: (stats) => 85,
               effect: (stats) => {
                   if (roll(85)) {
@@ -991,7 +1005,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
               id: 'sleep_stream',
-              text: '睡觉直播',
+              text: '直播睡觉 (智力-)',
               calculateChance: (stats) => 90,
               effect: (stats) => {
                   if (roll(90)) {
@@ -1000,7 +1014,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                           '你打了个呼噜，弹幕瞬间爆炸。',
                           '睡醒后发现由于太可爱，收到了巨额打赏。'
                       ]);
-                      return { changes: { health: 5, satiety: 5 }, message: msg, success: true, effectType: 'sleep' };
+                      return { changes: { health: 5, satiety: 5, smarts: -2 }, message: msg, success: true, effectType: 'sleep' };
                   }
                   const failMsg = pick([
                       '你在梦中抽搐，吓到了观众。',
@@ -1066,70 +1080,17 @@ export const DAILY_ACTIONS: GameEvent[] = [
       ]
   },
   {
-      id: 'costume_shoot',
-      title: '变装拍摄',
-      description: '穿上各种奇怪的衣服拍照。为了艺术（和罐头）。',
-      image: getImg('变装拍摄', '8b5cf6'),
-      type: 'DAILY',
-      hints: [{ stat: '哈气', change: 'up' }],
-      allowedStages: ['CELEBRITY'],
-      choices: [
-          {
-              id: 'cooperate',
-              text: '配合拍摄',
-              calculateChance: (stats) => Math.min(90, 30 + stats.smarts * 0.5),
-              effect: (stats) => {
-                  if (roll(50)) {
-                      const msg = pick([
-                          '这套女仆装虽然羞耻，但报酬丰厚。',
-                          '你穿上了小西装，看起来像个猫届CEO。',
-                          '虽然帽子有点紧，但你为了艺术忍了。'
-                      ]);
-                      return { changes: { satiety: 15, smarts: 2 }, message: msg, success: true, effectType: 'neutral', sound: 'shutter' };
-                  }
-                  const failMsg = pick([
-                      '你撕碎了衣服。我不做猫了！',
-                      '你死活不肯戴那个蝴蝶结，拍摄被迫取消。',
-                      '你在镜头前露出了一脸嫌弃，摄影师很难办。'
-                  ]);
-                  return { changes: { hissing: 5 }, message: failMsg, success: false, effectType: 'damage', sound: 'hiss' };
-              }
-          },
-          {
-              id: 'rebel',
-              text: '罢工抗议',
-              calculateChance: (stats) => 90,
-              effect: (stats) => {
-                   if (roll(90)) {
-                       const msg = pick([
-                           '你钻进了更衣室的柜底死活不出来。拍摄取消。',
-                           '你对着镜头展示了菊花。这是无声的抗议。',
-                           '你趁乱叼走了道具火腿肠，然后跑路了。'
-                       ]);
-                       return { changes: { hissing: 4, satiety: 5 }, message: msg, success: true, effectType: 'neutral' };
-                   }
-                   const failMsg = pick([
-                       '你被强行按住拍了几张照片，心情极差。',
-                       '你想跑，但是被经纪人抓住了后颈皮。',
-                       '抗议无效，今天的罐头也没了。'
-                   ]);
-                   return { changes: { hissing: -5, satiety: -5 }, message: failMsg, success: false, effectType: 'damage' };
-              }
-          }
-      ]
-  },
-  {
       id: 'product_review',
       title: '产品测评',
-      description: '商家寄来了新出的猫抓板。是时候检验质量了。',
+      description: '商家寄来了新出的猫抓板。你可以真实测评（智力+）或者违心吹捧（智力-）。',
       image: getImg('产品测评', '3b82f6'),
       type: 'DAILY',
-      hints: [{ stat: '智力', change: 'up' }],
+      hints: [{ stat: '智力', change: 'up' }, { stat: '智力', change: 'down' }],
       allowedStages: ['CELEBRITY'],
       choices: [
           {
               id: 'honest',
-              text: '真实测评',
+              text: '真实测评 (智力+)',
               calculateChance: (stats) => 85,
               effect: (stats) => {
                    if (roll(85)) {
@@ -1150,7 +1111,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
               id: 'fake_praise',
-              text: '违心吹捧',
+              text: '违心吹捧 (智力-)',
               calculateChance: (stats) => 70,
               effect: (stats) => {
                    if (roll(70)) {
@@ -1159,7 +1120,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
                            '你对着那个充满廉价塑料味的玩具打呼噜。演技派。',
                            '商家加钱了。你立刻表示这是你用过最好的产品。'
                        ]);
-                       return { changes: { satiety: 15, smarts: -2, hissing: -5 }, message: msg, success: true, effectType: 'heal', sound: 'meow' };
+                       return { changes: { satiety: 15, smarts: -4, hissing: -5 }, message: msg, success: true, effectType: 'heal', sound: 'meow' };
                    }
                    const failMsg = pick([
                        '你演得太假了，粉丝看出来你在恰烂钱。',
@@ -1174,24 +1135,24 @@ export const DAILY_ACTIONS: GameEvent[] = [
   {
       id: 'scandal',
       title: '制造绯闻',
-      description: '和隔壁的小花猫被拍到了。炒作一下？',
+      description: '和隔壁的小花猫被拍到了。你可以澄清（理智，哈气-）或者炒作（野性，哈气+）。',
       image: getImg('制造绯闻', 'ef4444'),
       type: 'DAILY',
-      hints: [{ stat: '哈气', change: 'up' }],
+      hints: [{ stat: '哈气', change: 'up' }, { stat: '哈气', change: 'down' }],
       allowedStages: ['CELEBRITY'],
       choices: [
           {
               id: 'confirm',
-              text: '承认恋情',
+              text: '炒作恋情 (哈气+)',
               calculateChance: (stats) => 80,
               effect: (stats) => {
                   if (roll(80)) {
                       const msg = pick([
-                          '全网都在磕CP。',
+                          '全网都在磕CP。你表现得像个护妻狂魔。',
                           '你们被称为“国民情侣猫”。',
                           '你们一起拍了广告，狠狠赚了一笔奶粉钱。'
                       ]);
-                      return { changes: { hissing: -5, satiety: 10 }, message: msg, success: true, effectType: 'neutral' };
+                      return { changes: { hissing: 5, satiety: 10 }, message: msg, success: true, effectType: 'neutral' };
                   }
                   const failMsg = pick([
                       '粉丝脱粉回踩。你的女友粉都跑了。',
@@ -1203,16 +1164,16 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
               id: 'deny',
-              text: '发声明',
+              text: '温和声明 (哈气-)',
               calculateChance: (stats) => 80,
               effect: (stats) => {
                   if (roll(80)) {
                       const msg = pick([
-                          '你声明那只是普通朋友。',
-                          '“专注事业，勿cue。”',
+                          '你声明那只是普通朋友。大家赞赏你的坦诚。',
+                          '“专注事业，勿cue。” 粉丝觉得你很专业。',
                           '你发了一张独自看海的照片，暗示单身。'
                       ]);
-                      return { changes: { smarts: 4, hissing: 4 }, message: msg, success: true, effectType: 'neutral' };
+                      return { changes: { smarts: 4, hissing: -3 }, message: msg, success: true, effectType: 'neutral' };
                   }
                   const failMsg = pick([
                       '越描越黑，现在大家都觉得你是渣猫。',
@@ -1227,20 +1188,20 @@ export const DAILY_ACTIONS: GameEvent[] = [
   {
       id: 'charity_event',
       title: '慈善活动',
-      description: '为流浪猫基金会站台。提升猫设。',
+      description: '为流浪猫基金会站台。你可以出席（智力+）或者捣乱（智力-）。',
       image: getImg('慈善活动', '10b981'),
       type: 'DAILY',
-      hints: [{ stat: '智力', change: 'up' }],
+      hints: [{ stat: '智力', change: 'up' }, { stat: '智力', change: 'down' }],
       allowedStages: ['CELEBRITY'],
       choices: [
           {
               id: 'attend',
-              text: '出席活动',
+              text: '出席活动 (智力+)',
               calculateChance: (stats) => 90,
               effect: (stats) => {
                   if (roll(90)) {
                       const msg = pick([
-                          '你不仅是明星，还是慈善家。',
+                          '你不仅是明星，还是慈善家。你的形象更加高大了。',
                           '你感人的演讲（虽然只是叫了两声）筹集了大量猫粮。',
                           '你探望了以前的流浪兄弟，不忘初心。'
                       ]);
@@ -1256,7 +1217,7 @@ export const DAILY_ACTIONS: GameEvent[] = [
           },
           {
               id: 'steal_spotlight',
-              text: '抢风头',
+              text: '捣乱抢风头 (智力-)',
               calculateChance: (stats) => Math.min(90, 40 + stats.hissing * 0.5),
               effect: (stats) => {
                   if (roll(Math.min(90, 40 + stats.hissing * 0.5))) {

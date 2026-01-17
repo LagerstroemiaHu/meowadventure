@@ -9,7 +9,7 @@ export const LOVE_QUESTS: GameEvent[] = [
         id: 'side_hakimi_1',
         chainId: 'hakimi_love',
         title: '情缘：哈基米之舞',
-        description: '一只三花猫正在踩节奏。[解锁: 第1天]',
+        description: '一只三花猫正在踩节奏。',
         image: getImg('哈基米', 'f472b6'),
         type: 'SIDE_QUEST',
         allowedStages: ['STRAY'],
@@ -18,9 +18,9 @@ export const LOVE_QUESTS: GameEvent[] = [
             {
                 id: 'love_choice_dance',
                 text: '加入节奏',
-                calculateChance: (stats) => 10 + stats.smarts * 3,
+                calculateChance: (stats) => Math.min(90, 10 + stats.smarts * 0.5 + stats.health * 0.3),
                 effect: (stats) => {
-                    if (roll(80)) {
+                    if (roll(10 + stats.smarts * 0.5 + stats.health * 0.3)) {
                         return {
                             changes: { hissing: -5, satiety: -2, smarts: -2 }, // Stage 1: minor stats
                             message: '你跟上了她的节拍！她眼神拉丝：“舞跳得不错嘛，老头。”',
@@ -53,7 +53,7 @@ export const LOVE_QUESTS: GameEvent[] = [
         id: 'side_hakimi_2',
         chainId: 'hakimi_love',
         title: '情缘：垃圾桶晚餐',
-        description: '哈基米约你在秘密基地见面。[解锁: 第7天 | 需认识哈基米]',
+        description: '哈基米约你在秘密基地见面。',
         image: getImg('甜蜜约会', 'f472b6'),
         type: 'SIDE_QUEST',
         allowedStages: ['STRAY', 'CAT_LORD'],
@@ -91,7 +91,7 @@ export const LOVE_QUESTS: GameEvent[] = [
         id: 'side_hakimi_3',
         chainId: 'hakimi_love',
         title: '情缘：玻璃之隔',
-        description: '暴雨夜，哈基米出现在窗外。[解锁: 第11天 | 需约会过 | 身体完整]',
+        description: '暴雨夜，哈基米出现在窗外。',
         image: getImg('咫尺天涯', '1e3a8a'),
         type: 'SIDE_QUEST',
         allowedStages: ['MANSION', 'CELEBRITY'],
@@ -138,7 +138,7 @@ export const LOVE_QUESTS: GameEvent[] = [
         id: 'side_hakimi_3_neutered',
         chainId: 'hakimi_love',
         title: '情缘：无言的结局',
-        description: '哈基米在呼唤你，但你看了看自己残缺的身体。[解锁: 第11天 | 需约会过 | 已绝育]',
+        description: '哈基米在呼唤你，但你看了看自己残缺的身体。',
         image: getImg('淡淡的忧伤', '1e3a8a'),
         type: 'SIDE_QUEST',
         allowedStages: ['MANSION', 'CELEBRITY'],

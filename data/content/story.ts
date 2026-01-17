@@ -6,13 +6,13 @@ export const STORY_QUESTS: GameEvent[] = [
     {
         id: 'stage_cat_lord',
         title: '挑战：猫圈话事人',
-        description: '月圆之夜，流浪猫大会。现任老大“独眼龙”站在高处。你需要证明实力。\n[解锁要求: 第3天, 哈气>30]',
+        description: '月圆之夜，流浪猫大会。现任老大“独眼龙”站在高处。你需要证明实力。',
         image: getImg('猫领主', '4c1d95'),
         type: 'STAGE',
         unlockCondition: (day, stats) => {
-            const unlocked = day >= 3 && stats.hissing > 30;
+            const unlocked = day >= 4 && stats.hissing > 30;
             let reason = '';
-            if (day < 3) reason = '需第3天';
+            if (day < 4) reason = '需第4天';
             else if (stats.hissing <= 30) reason = '需哈气>30';
             return { unlocked, reason };
         },
@@ -25,9 +25,9 @@ export const STORY_QUESTS: GameEvent[] = [
                      const chance = Math.min(95, 40 + stats.hissing * 0.5 + stats.health * 0.2);
                      if (roll(chance)) {
                          const msg = pick([
-                             '你一记漂亮的左勾拳把独眼龙打进了可回收垃圾桶。全场寂静，随即爆发出一阵喵喵叫。新王登基！(解锁：猫领主阶段)',
-                             '你利用体型优势，一记泰山压顶，直接把独眼龙坐晕了。暴力，但是有效。(解锁：猫领主阶段)',
-                             '双方缠斗了十分钟，最后你咬住了它的后颈皮。独眼龙求饶了。这片街区是你的了！(解锁：猫领主阶段)'
+                             '你一记漂亮的左勾拳把独眼龙打进了可回收垃圾桶。全场寂静，随即爆发出一阵喵喵叫。新王登基！',
+                             '你利用体型优势，一记泰山压顶，直接把独眼龙坐晕了。暴力，但是有效。',
+                             '双方缠斗了十分钟，最后你咬住了它的后颈皮。独眼龙求饶了。这片街区是你的了！'
                          ]);
                          return { 
                              changes: { hissing: 10, smarts: 5, satiety: -10 }, 
@@ -54,9 +54,9 @@ export const STORY_QUESTS: GameEvent[] = [
                     const chance = Math.min(95, 20 + stats.smarts * 0.8);
                     if (roll(chance)) {
                          const msg = pick([
-                             '你通过散布独眼龙偷吃狗粮的谣言，成功瓦解了它的统治。大家推举你为新老大，虽然手段有点脏。(解锁：猫领主阶段)',
-                             '你发表了一篇关于《垃圾桶资源分配优化》的演讲，猫猫们觉得你很有文化，决定选你当CEO。(解锁：猫领主阶段)',
-                             '你承诺带大家去吃自助餐（其实是骗人的）。在糖衣炮弹下，独眼龙被和平演变了。(解锁：猫领主阶段)'
+                             '你通过散布独眼龙偷吃狗粮的谣言，成功瓦解了它的统治。大家推举你为新老大，虽然手段有点脏。',
+                             '你发表了一篇关于《垃圾桶资源分配优化》的演讲，猫猫们觉得你很有文化，决定选你当CEO。',
+                             '你承诺带大家去吃自助餐（其实是骗人的）。在糖衣炮弹下，独眼龙被和平演变了。'
                          ]);
                          return { 
                              changes: { hissing: 5, smarts: 10, satiety: -5 }, 
@@ -80,14 +80,15 @@ export const STORY_QUESTS: GameEvent[] = [
     {
         id: 'stage_mansion',
         title: '机遇：豪宅大劫案',
-        description: '那扇传说中的落地窗竟然没关！里面有真皮沙发。 \n[解锁要求: 第6天, 聪明>40]',
+        description: '那扇传说中的落地窗竟然没关！只要足够温顺，或许能混进去。',
         image: getImg('闯入豪宅', '0284c7'),
         type: 'STAGE',
+        // 修改：进入豪宅需要哈气值 < 20 (表示温顺)
         unlockCondition: (day, stats) => {
-             const unlocked = day >= 6 && stats.smarts > 40;
+             const unlocked = day >= 8 && stats.hissing < 20;
              let reason = '';
-             if (day < 6) reason = '需第6天';
-             else if (stats.smarts <= 40) reason = '需聪明>40';
+             if (day < 8) reason = '需第8天';
+             else if (stats.hissing >= 20) reason = '需温顺(哈气<20)';
              return { unlocked, reason };
         },
         choices: [
@@ -98,9 +99,9 @@ export const STORY_QUESTS: GameEvent[] = [
             effect: (stats) => {
                  if (roll(Math.min(95, 30 + stats.smarts * 0.5 + stats.health * 0.3))) {
                     const msg = pick([
-                        '你像一阵风一样潜入，不仅吃光了猫粮，还在真皮沙发上留下了你的专属抓痕。这里是天堂。(解锁：豪宅阶段)',
-                        '你成功避开了所有摄像头和传感器。现在，这个带地暖的客厅就是你的新皇宫。(解锁：豪宅阶段)',
-                        '你钻进了保姆的袋子混了进去。等到晚上出来时，这里已经任你宰割。(解锁：豪宅阶段)'
+                        '你像一阵风一样潜入，不仅吃光了猫粮，还在真皮沙发上留下了你的专属抓痕。这里是天堂。',
+                        '你成功避开了所有摄像头和传感器。现在，这个带地暖的客厅就是你的新皇宫。',
+                        '你钻进了保姆的袋子混了进去。等到晚上出来时，这里已经任你宰割。'
                     ]);
                     return { 
                         changes: { satiety: 30, health: 10, smarts: 8 }, 
@@ -144,13 +145,13 @@ export const STORY_QUESTS: GameEvent[] = [
     {
         id: 'stage_influencer',
         title: '命运：流量密码',
-        description: '一个拿着手机的年轻人盯上了你。他一直在找角度。 \n[解锁要求: 第9天, 聪明>50, 健康>30]',
+        description: '一个拿着手机的年轻人盯上了你。他一直在找角度。',
         image: getImg('网红耄耋', 'be123c'),
         type: 'STAGE',
         unlockCondition: (day, stats) => {
-            const unlocked = day >= 9 && stats.smarts > 50 && stats.health > 30;
+            const unlocked = day >= 12 && stats.smarts > 50 && stats.health > 30;
             let reason = '';
-            if (day < 9) reason = '需第9天';
+            if (day < 12) reason = '需第12天';
             else if (stats.smarts <= 50) reason = '需聪明>50';
             else if (stats.health <= 30) reason = '需健康>30';
             return { unlocked, reason };
@@ -163,9 +164,9 @@ export const STORY_QUESTS: GameEvent[] = [
             effect: (stats) => {
                if (roll(Math.min(95, 20 + stats.smarts * 0.5 + stats.satiety * 0.3))) {
                  const msg = pick([
-                     '视频标题《这只猫看破了红尘》爆火。你莫名其妙成了全网“哲学猫”代表。(解锁：网红阶段)',
-                     '你厌世的眼神击中了无数社畜的心。他们哭着喊着要给你寄罐头。(解锁：网红阶段)',
-                     '你随便伸了个懒腰，就被解读为“猫式瑜伽大师”。一夜涨粉百万。(解锁：网红阶段)'
+                     '视频标题《这只猫看破了红尘》爆火。你莫名其妙成了全网“哲学猫”代表。',
+                     '你厌世的眼神击中了无数社畜的心。他们哭着喊着要给你寄罐头。',
+                     '你随便伸了个懒腰，就被解读为“猫式瑜伽大师”。一夜涨粉百万。'
                  ]);
                  return { 
                      changes: { smarts: 8, hissing: -5, satiety: 15 }, 
@@ -210,20 +211,21 @@ export const STORY_QUESTS: GameEvent[] = [
     {
         id: 'stage_sales',
         title: '巅峰：直播带货',
-        description: '年轻人想让你穿“招财猫”红马甲直播卖猫粮。 \n[解锁要求: 第12天, 坚持生存]',
+        description: '年轻人想让你穿“招财猫”红马甲直播卖猫粮。',
         image: getImg('明星带货', 'fbbf24'),
         type: 'STAGE',
         unlockCondition: (day, stats) => ({
-            unlocked: day >= 12,
-            reason: day < 12 ? '需等待至第12天' : undefined
+            unlocked: day >= 14,
+            reason: day < 14 ? '需等待至第14天' : undefined
         }),
         choices: [
           {
             id: 'cooperate',
             text: '为了生活，不寒碜',
-            calculateChance: (stats) => Math.min(95, 30 + stats.smarts * 0.4 + (100 - stats.satiety) * 0.3),
+            // Lowered chance significantly: Max 60% chance even with good stats
+            calculateChance: (stats) => Math.min(60, 10 + stats.smarts * 0.3 + (100 - stats.satiety) * 0.2),
             effect: (stats) => {
-                 if (roll(Math.min(95, 30 + stats.smarts * 0.4 + (100 - stats.satiety) * 0.3))) {
+                 if (roll(Math.min(60, 10 + stats.smarts * 0.3 + (100 - stats.satiety) * 0.2))) {
                      const msg = pick([
                          '真香！弹幕都在刷礼物，你也吃到了顶级金枪鱼。尊严是什么？能吃吗？',
                          '你非常配合地吃播。商家乐开了花，你下半辈子的猫粮都有着落了。',
@@ -242,9 +244,10 @@ export const STORY_QUESTS: GameEvent[] = [
           {
               id: 'run',
               text: '宁死不从！',
-              calculateChance: (stats) => 90,
+              // High risk escape option
+              calculateChance: (stats) => Math.min(50, stats.hissing * 0.5),
               effect: (stats) => {
-                  if (roll(90)) {
+                  if (roll(Math.min(50, stats.hissing * 0.5))) {
                       const msg = pick([
                           '你飞檐走壁逃之夭夭，留下了一个潇洒的背影和一地鸡毛。',
                           '你趁他们调试灯光时，从窗户跳了出去。自由的味道比罐头更香。',
@@ -263,73 +266,3 @@ export const STORY_QUESTS: GameEvent[] = [
         ]
       }
 ];
-
-export const HIGH_RISK_EVENTS: Record<number, GameEvent> = {
-    3: {
-        id: 'risk_rat_king',
-        title: '挑战：下水道鼠王',
-        description: '这不仅是老鼠，这是一只喝了核废水的变异硕鼠。它正坐在你的晚餐上剔牙。',
-        image: getImg('决战鼠王', '000000'),
-        type: 'SPECIAL',
-        choices: [
-            {
-                id: 'fight_king',
-                text: '决一死战',
-                calculateChance: (stats) => Math.min(85, 20 + stats.hissing * 0.5 + stats.health * 0.3),
-                effect: (stats) => {
-                    if (roll(20 + stats.hissing * 0.5 + stats.health * 0.3)) {
-                        const msg = pick([
-                            '经过一番恶战，你咬断了鼠王的喉咙！今晚吃自助餐！',
-                            '你利用地形优势，把它踹进了下水道深处。你是这里的神！',
-                            '你被咬了好几口，但最终还是你赢了。这是王者的伤勋。'
-                        ]);
-                        return { changes: { hissing: 10, satiety: 30, health: -10 }, message: msg, success: true, effectType: 'damage', sound: 'hiss' };
-                    }
-                    const failMsg = pick([
-                        '它居然会柔术！你被按在地上摩擦，尾巴都被咬秃了。',
-                        '老鼠帮手来了！你双拳难敌四手，狼狈逃窜。',
-                        '你被它那巨大的门牙吓傻了，僵在原地被打了一顿。'
-                    ]);
-                    return { changes: { health: -30, hissing: -5 }, message: failMsg, success: false, effectType: 'damage', sound: 'impact' };
-                }
-            },
-            {
-                id: 'flee',
-                text: '战略撤退',
-                calculateChance: (stats) => 90,
-                effect: (stats) => {
-                    if (roll(90)) {
-                        const msg = pick([
-                            '大丈夫能屈能伸。这块地盘送它了，反正本来也很臭。',
-                            '你假装没看见，优雅地转身离开。只要我不尴尬，尴尬的就是老鼠。',
-                            '惹不起还躲不起吗？你决定去翻翻别的垃圾桶。'
-                        ]);
-                        return { changes: { hissing: -2, satiety: -10 }, message: msg, success: true, effectType: 'neutral' };
-                    }
-                    const failMsg = pick([
-                        '你转身想跑，结果被鼠王咬住了尾巴！',
-                        '后面是死路！你不得不硬着头皮挨了两下。',
-                        '逃跑途中滑倒了，摔了个狗吃屎。'
-                    ]);
-                    return { changes: { health: -10, hissing: -5 }, message: failMsg, success: false, effectType: 'damage', sound: 'impact' };
-                }
-            }
-        ]
-    },
-};
-
-export const STUPID_DEATH_EVENT: GameEvent = {
-    id: 'stupid_death',
-    title: '好奇心害死猫',
-    description: '你的脑子似乎不太好使了。你看到一个飞速旋转的车轮，觉得它看起来很好玩，于是把头伸了进去...',
-    image: getImg('蠢死', '000000'),
-    type: 'SPECIAL',
-    choices: [
-        {
-            id: 'die',
-            text: '下辈子注意点',
-            calculateChance: (stats) => 0,
-            effect: (stats) => ({ changes: { health: -100 }, message: '眼前一黑。旁白都不想解说你的死法。', success: false, effectType: 'damage', sound: 'impact' })
-        }
-    ]
-};

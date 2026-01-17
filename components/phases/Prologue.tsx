@@ -1,105 +1,160 @@
-import React, { useState } from 'react';
-import { Snowflake, ArrowRight } from 'lucide-react';
+
+import React, { useState, useEffect } from 'react';
+import { ArrowRight, SkipForward, ArrowLeft } from 'lucide-react';
 import { audioManager } from '../../utils/audio';
-
-type PrologueStepId = 'INTRO' | 'CHOICE_SHELF' | 'BATTLE_START' | 'BATTLE_END' | 'EXILE' | 'DEATH';
-
-interface PrologueStep {
-    id: PrologueStepId;
-    text: string;
-    choices?: { label: string, next: PrologueStepId }[];
-}
+import { getImg } from '../../data/utils';
 
 interface Props {
     onComplete: () => void;
+    onBack: () => void;
 }
 
-export const Prologue: React.FC<Props> = ({ onComplete }) => {
-    const [stepId, setStepId] = useState<PrologueStepId>('INTRO');
+export const Prologue: React.FC<Props> = ({ onComplete, onBack }) => {
+    const [panelIndex, setPanelIndex] = useState(0);
 
-    const prologueContent: Record<PrologueStepId, PrologueStep> = {
-        'INTRO': {
-            id: 'INTRO',
-            text: '凛冬。红木门虚掩着。\n\n屋内透出暖气和金枪鱼罐头的香味。\n那是你曾经的家。',
-            choices: [{ label: '跳上桌子开吃', next: 'CHOICE_SHELF' }]
+    const panels = [
+        {
+            id: 1,
+            image: getImg('爬上博古架', 'b91c1c'),
+            caption: '那一刻，我只是想在狭小的空间里奔跑',
+            sub: (
+                <>
+                    哪怕四处碰壁，也要用 <span className="text-rose-500 font-black text-lg md:text-xl animate-pulse inline-block mx-1">健康</span> 证明我还活着。
+                </>
+            )
         },
-        'CHOICE_SHELF': {
-            id: 'CHOICE_SHELF',
-            text: '你刚伸出舌头，那个戴白手套的洁癖管家就尖叫着冲了过来。\n\n门“砰”地一声关上了。\n前有鸡毛掸子，后无退路。',
-            choices: [{ label: '跳上博古架！', next: 'BATTLE_START' }]
+        {
+            id: 2,
+            image: getImg('人类的愤怒', '4a044e'),
+            caption: '那个白手套发不断拿发光方块向我靠近又远离',
+            sub: (
+                <>
+                    是戏弄还是陷阱？我需要更高的 <span className="text-blue-500 font-black text-lg md:text-xl animate-bounce inline-block mx-1">智力</span> 才能看穿。
+                </>
+            )
         },
-        'BATTLE_START': {
-            id: 'BATTLE_START',
-            text: '你跃上摇摇欲坠的架子。\n\n那是主人的明朝花瓶。\n管家的脸因恐惧而扭曲：“别动！”\n\n你笑了。',
-            choices: [{ label: '大闹天宫', next: 'BATTLE_END' }]
+        {
+            id: 3,
+            image: getImg('被驱逐', '171717'),
+            caption: '大门重重关上。雪花落在我温热的鼻头上',
+            sub: (
+                <>
+                    寒风刺骨，从此以后，<span className="text-amber-500 font-black text-lg md:text-xl animate-wiggle inline-block mx-1">饱腹</span> 将是最大的奢望。
+                </>
+            )
         },
-        'BATTLE_END': {
-            id: 'BATTLE_END',
-            text: '【噼里啪啦】\n\n价值连城的碎片铺满地板。\n你在废墟中穿梭，直到被一只大手死死抓住了后颈皮。',
-            choices: [{ label: '放开我！', next: 'EXILE' }]
-        },
-        'EXILE': {
-            id: 'EXILE',
-            text: '大门重重关上。\n\n你被扔进雪地。\n“滚！”\n\n灯灭了。只剩彻骨的寒风。',
-            choices: [{ label: '睡吧...', next: 'DEATH' }]
-        },
-        'DEATH': {
-            id: 'DEATH',
-            text: '冷。饿。\n\n意识模糊。\n\n如果再来一次，我要活成传说...',
-            choices: [{ label: '......', next: 'INTRO' }] 
+        {
+            id: 4,
+            image: getImg('凶狠凝视', 'f59e0b'),
+            caption: '没有回头乞求。我舔了舔爪子，露出了獠牙',
+            sub: (
+                <>
+                    面对残酷的世界，唯有 <span className="text-purple-600 font-black text-lg md:text-xl animate-vibrate inline-block mx-1">哈气</span> 能捍卫尊严。
+                </>
+            )
         }
-    };
+    ];
 
-    const handleChoice = (next: PrologueStepId) => {
-        if (next === 'BATTLE_END') audioManager.playSfx('impact');
-        else if (next === 'DEATH') audioManager.playSfx('heartbeat');
-        else audioManager.playClick();
-
-        if (stepId === 'DEATH') {
-            onComplete();
+    const nextPanel = () => {
+        if (panelIndex < panels.length - 1) {
+            audioManager.playSfx('page_flip');
+            setPanelIndex(prev => prev + 1);
         } else {
-            setStepId(next);
+            audioManager.playSfx('impact');
+            onComplete();
         }
     };
 
-    const currentStep = prologueContent[stepId];
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.code === 'Space' || e.code === 'Enter') {
+                nextPanel();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [panelIndex]);
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-6 relative overflow-hidden">
-            <div className="absolute inset-0 opacity-20 pointer-events-none">
-                {Array.from({length: 20}).map((_,i) => (
-                    <Snowflake key={i} size={Math.random() * 20 + 10} className="absolute animate-bounce" style={{top: `${Math.random()*100}%`, left: `${Math.random()*100}%`, animationDuration: `${Math.random()*5+5}s`}} />
-                ))}
-            </div>
-            
-            <div className="max-w-xl w-full z-10 animate-in">
-                <div className="mb-4 text-stone-500 text-xs font-black uppercase tracking-widest border-b border-stone-800 pb-2">Prologue: Unrelenting Winter</div>
-                <h2 className="text-3xl md:text-4xl font-black mb-8 leading-tight italic text-stone-200">
-                    {stepId === 'INTRO' && '无法回头'}
-                    {stepId === 'CHOICE_SHELF' && '洁癖管家'}
-                    {stepId === 'BATTLE_START' && '绝境'}
-                    {stepId === 'BATTLE_END' && '破碎'}
-                    {stepId === 'EXILE' && '放逐'}
-                    {stepId === 'DEATH' && '终焉'}
-                </h2>
-                
-                <div className="bg-stone-900 border-l-4 border-white p-6 mb-10 shadow-[0_0_30px_rgba(255,255,255,0.05)]">
-                    <p className="text-xl md:text-3xl leading-relaxed whitespace-pre-wrap font-serif text-stone-300 font-bold">
-                        {currentStep.text}
-                    </p>
+        <div 
+            className="fixed inset-0 bg-stone-900 flex flex-col items-center justify-center p-4 cursor-pointer select-none"
+            onClick={nextPanel}
+        >
+            <div className="w-full max-w-lg h-full max-h-[90vh] flex flex-col gap-4 relative">
+                {/* Controls Layer */}
+                <div className="absolute top-0 left-0 right-0 z-50 flex justify-between items-start pointer-events-none">
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); onBack(); }}
+                        className="text-stone-500 hover:text-white flex items-center gap-1 text-xs uppercase font-black pointer-events-auto transition-colors"
+                    >
+                        <ArrowLeft size={14} /> 返回标题
+                    </button>
+
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); onComplete(); }}
+                        className="text-stone-500 hover:text-white flex items-center gap-1 text-xs uppercase font-black pointer-events-auto transition-colors"
+                    >
+                        <SkipForward size={14} /> 跳过剧情
+                    </button>
                 </div>
 
-                <div className="space-y-4">
-                    {currentStep.choices?.map((choice, idx) => (
-                        <button 
-                            key={idx} 
-                            onClick={() => handleChoice(choice.next)}
-                            className="w-full py-4 border-2 border-white bg-transparent hover:bg-white hover:text-black transition-all font-black text-lg uppercase tracking-widest flex items-center justify-between px-6 group"
-                        >
-                            <span>{choice.label}</span>
-                            <ArrowRight className="group-hover:translate-x-2 transition-transform" />
-                        </button>
-                    ))}
+                <div className="flex-1 grid grid-rows-4 gap-4 h-full mt-6">
+                    {panels.map((panel, idx) => {
+                        // 漫画显示逻辑：当前格完全显示，之前的格变暗，之后的格隐藏
+                        const isVisible = idx <= panelIndex;
+                        const isCurrent = idx === panelIndex;
+                        
+                        return (
+                            <div 
+                                key={panel.id}
+                                className={`
+                                    relative border-[4px] border-white bg-black overflow-hidden transition-all duration-500 ease-out
+                                    ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}
+                                    ${!isCurrent && isVisible ? 'grayscale brightness-50' : 'grayscale-0'}
+                                `}
+                            >
+                                {/* 图片层 */}
+                                <div className="absolute inset-0">
+                                    <img 
+                                        src={panel.image} 
+                                        alt={`Panel ${panel.id}`} 
+                                        className="w-full h-full object-cover"
+                                    />
+                                    {/* 漫画速度线遮罩特效 */}
+                                    {isCurrent && (
+                                        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_45%,rgba(255,255,255,0.1)_50%,transparent_55%)] bg-[length:10px_10px] opacity-20 pointer-events-none" />
+                                    )}
+                                </div>
+
+                                {/* 字幕层 - 漫画气泡风格 */}
+                                {isVisible && (
+                                    <div className={`
+                                        absolute bottom-2 left-2 right-2 bg-white border-[3px] border-black p-2 shadow-[4px_4px_0px_0px_black]
+                                        transition-all duration-300 delay-100
+                                        ${isCurrent ? 'scale-100 opacity-100' : 'scale-95 opacity-80'}
+                                    `}>
+                                        <p className="font-black text-sm md:text-base text-black leading-tight uppercase">
+                                            {panel.caption}
+                                        </p>
+                                        <p className="font-bold text-xs md:text-sm text-stone-600 mt-1 italic flex items-center flex-wrap">
+                                            {panel.sub}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* 序号标记 */}
+                                <div className="absolute top-0 left-0 bg-black text-white px-2 py-1 font-black text-xs border-r-2 border-b-2 border-white">
+                                    0{panel.id}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                <div className="h-12 flex items-center justify-center shrink-0">
+                    <div className="text-white font-black uppercase tracking-widest animate-pulse flex items-center gap-2 text-sm">
+                        {panelIndex < panels.length - 1 ? '点击屏幕继续' : '开启传说'} <ArrowRight size={16} />
+                    </div>
                 </div>
             </div>
         </div>
