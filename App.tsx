@@ -89,6 +89,7 @@ export default function App() {
   
   const [isStageTransitioning, setIsStageTransitioning] = useState(false);
   const [isShutterActive, setIsShutterActive] = useState(false);
+  const [isGameOverTransitioning, setIsGameOverTransitioning] = useState(false);
 
   const [unlockedEndings, setUnlockedEndings] = useState<EndingType[]>(() => {
     const saved = localStorage.getItem('cat_endings');
@@ -119,7 +120,7 @@ export default function App() {
   }, [phase, stage]);
 
   useEffect(() => {
-    if (phase !== 'START' && phase !== 'PROLOGUE' && phase !== 'REBIRTH' && phase !== 'CHARACTER_SELECT' && phase !== 'GAME_OVER' && phase !== 'VICTORY' && character) {
+    if (phase !== 'START' && phase !== 'PROLOGUE' && phase !== 'REBIRTH' && phase !== 'CHARACTER_SELECT' && phase !== 'GAME_OVER' && phase !== 'VICTORY' && character && !isGameOverTransitioning) {
         const saveData: SaveData = {
             day, stats, stage, completedEventIds, completedAt, history, 
             currentQuestIndex, actionPoints, dailyActionsTaken, logs, lastRandomEventId, character,
@@ -129,7 +130,7 @@ export default function App() {
         };
         localStorage.setItem('cat_adventure_autosave', JSON.stringify(saveData));
     }
-  }, [day, stats, stage, completedEventIds, completedAt, history, currentQuestIndex, actionPoints, dailyActionsTaken, logs, lastRandomEventId, character, seenNightThoughtIds, phase]);
+  }, [day, stats, stage, completedEventIds, completedAt, history, currentQuestIndex, actionPoints, dailyActionsTaken, logs, lastRandomEventId, character, seenNightThoughtIds, phase, isGameOverTransitioning]);
 
   const addLog = (message: string, type: LogEntry['type'] = 'info') => {
     setLogs(prev => [{ day, message, type }, ...prev].slice(0, 30));
@@ -221,21 +222,29 @@ export default function App() {
   };
 
   const finishGame = (type: EndingType) => {
-    // 1. Determine Primary Ending
-    setPrimaryEnding(type);
+    // 1. Trigger Transition Animation Immediately
+    setIsGameOverTransitioning(true);
     
-    // 2. Calculate Secondary Achievements
+    // 2. Remove Autosave IMMEDIATELY to prevent resuming dead game
+    localStorage.removeItem('cat_adventure_autosave');
+    
+    // 3. Determine Primary Ending and Achievements
+    setPrimaryEnding(type);
     const allEarned = calculateAchievements(type);
     setEarnedAchievements(allEarned);
 
-    // 3. Unlock in Storage
+    // 4. Unlock in Storage
     setUnlockedEndings(prev => {
       const next = Array.from(new Set([...prev, ...allEarned]));
       localStorage.setItem('cat_endings', JSON.stringify(next));
       return next;
     });
 
-    setPhase('GAME_OVER');
+    // 5. Delay Phase Change to allow curtain animation to finish
+    setTimeout(() => {
+        setPhase('GAME_OVER');
+        setIsGameOverTransitioning(false);
+    }, 1500); 
   };
 
   // --- SAVE / LOAD SYSTEM ---
@@ -306,12 +315,18 @@ export default function App() {
     if (!saved) return;
     try {
         const data: SaveData = JSON.parse(saved);
+        if (isStatsDead(data.stats)) {
+            alert('该存档已结束（猫猫已回喵星），无法读取。');
+            return;
+        }
         loadGameData(data);
         addLog(`已读取存档 ${slotId}`, 'success');
     } catch (e) {
         alert('存档损坏，无法读取');
     }
   };
+
+  const isStatsDead = (s: GameStats) => s.health <= 0 || s.satiety <= 0 || s.hissing <= 0 || s.smarts <= 0;
 
   const continueLatestGame = () => {
        audioManager.init();
@@ -344,6 +359,12 @@ export default function App() {
        }
 
        if (latestSave) {
+           if (isStatsDead(latestSave.data.stats)) {
+               alert('最近的存档记录显示游戏已结束。请开始新游戏。');
+               // Optionally clear bad autosave
+               localStorage.removeItem('cat_adventure_autosave');
+               return;
+           }
            loadGameData(latestSave.data);
            addLog('已恢复至最近进度', 'success');
        } else {
@@ -353,7 +374,7 @@ export default function App() {
 
   const returnToTitle = () => {
       audioManager.playClick();
-      if (character) {
+      if (character && !isGameOverTransitioning && !isStatsDead(stats)) {
           const saveData: SaveData = {
               day, stats, stage, completedEventIds, completedAt, history, 
               currentQuestIndex, actionPoints, dailyActionsTaken, logs, lastRandomEventId, character,
@@ -575,6 +596,7 @@ export default function App() {
       setIsMenuOpen(false);
       setCurrentNightThought(null);
       setSeenNightThoughtIds([]);
+      setIsGameOverTransitioning(false);
   };
 
   // Determine survival endings
@@ -782,6 +804,7 @@ export default function App() {
             unlockedActions={unlockedActions}
             lockedActions={lockedActions}
             textScale={textScale}
+            isGameOverTransitioning={isGameOverTransitioning}
             
             onMenuOpen={() => setIsMenuOpen(true)}
             onChoice={handleChoice}

@@ -135,6 +135,7 @@ interface Props {
     isFlashActive: boolean;
     isStageTransitioning: boolean;
     isShutterActive: boolean;
+    isGameOverTransitioning: boolean;
     currentNightThought: NightThought | null;
     
     // Actions derived from parent
@@ -162,7 +163,7 @@ interface Props {
 export const MainGame: React.FC<Props> = ({
     phase, day, maxDays, stats, character, stage, logs, actionPoints,
     dailyActionsTaken, currentEvent, eventResult, activeEffect,
-    isShaking, isImpactShaking, isFlashActive, isStageTransitioning, isShutterActive,
+    isShaking, isImpactShaking, isFlashActive, isStageTransitioning, isShutterActive, isGameOverTransitioning,
     currentNightThought, unlockedActions, lockedActions, textScale,
     onMenuOpen, onChoice, onResolutionComplete, onStartDay, onFinishGame,
     onSetEvent, onSetEventResult, onUpdateStats, onSetDay, onSetPhase
@@ -170,6 +171,8 @@ export const MainGame: React.FC<Props> = ({
     
     const [displayStage, setDisplayStage] = useState<GameStage>(stage);
     const [muted, setMuted] = useState(audioManager.isMuted);
+    const [isExiting, setIsExiting] = useState(false);
+    
     // Action Point Consumption Animation State
     const [consumingIndex, setConsumingIndex] = useState<number | null>(null);
     const prevActionPoints = useRef(actionPoints);
@@ -224,6 +227,35 @@ export const MainGame: React.FC<Props> = ({
         };
     }, [stats.health, stats.satiety, muted, phase]);
 
+    // --- Animation Wrappers for Handlers ---
+    const handleSetEvent = (event: GameEvent) => {
+        audioManager.playClick();
+        setIsExiting(true);
+        setTimeout(() => {
+            onSetEvent(event);
+            onSetEventResult(null);
+            setIsExiting(false);
+        }, 200);
+    };
+
+    const handleChoice = (choice: Choice) => {
+        audioManager.playClick();
+        setIsExiting(true);
+        setTimeout(() => {
+            onChoice(choice);
+            setIsExiting(false);
+        }, 200);
+    };
+
+    const handleResolution = () => {
+        audioManager.playClick();
+        setIsExiting(true);
+        setTimeout(() => {
+            onResolutionComplete();
+            setIsExiting(false);
+        }, 200);
+    };
+
     const currentTheme = getEventTheme(currentEvent);
     const feedbackText = eventResult ? eventResult.message : currentEvent?.description || "";
     
@@ -246,6 +278,11 @@ export const MainGame: React.FC<Props> = ({
 
             <EffectsLayer isLowHealth={stats.health < 30} isLowSatiety={stats.satiety < 20} activeEffect={activeEffect} />
 
+            {/* Game Over Curtain */}
+            <div className={`curtain-top ${isGameOverTransitioning ? 'active' : ''}`}>
+                <div>GAME OVER</div>
+            </div>
+
             <header className={`h-14 md:h-16 shrink-0 bg-white border-b-[4px] md:border-b-[6px] border-black flex items-stretch z-30 shadow-md ${isImpactShaking ? 'animate-impact' : ''}`}>
                 <div className="flex items-center gap-1 shrink-0 border-r-[2px] md:border-r-[4px] border-black px-2 md:px-4 bg-stone-100 font-black">
                     <span className="text-lg md:text-2xl uppercase italic tracking-tighter">D{day}</span>
@@ -254,10 +291,10 @@ export const MainGame: React.FC<Props> = ({
                     <StatsDisplay stats={stats} />
                 </div>
                 <div className="flex items-center px-2 md:px-4 bg-stone-100 border-l-[2px] md:border-l-[4px] border-black gap-2">
-                    <button onClick={toggleMute} onMouseEnter={() => audioManager.playHover()} className="h-8 md:h-10 w-8 md:w-10 flex items-center justify-center border-2 md:border-4 border-black bg-stone-200 font-black shadow-[2px_2px_0px_0px_black] active:translate-x-0.5 active:translate-y-0.5 hover:bg-stone-300">
+                    <button onClick={toggleMute} onMouseEnter={() => audioManager.playHover()} className="h-8 md:h-10 w-8 md:w-10 flex items-center justify-center border-2 md:border-4 border-black bg-stone-200 font-black shadow-[2px_2px_0px_0px_black] active:translate-x-0.5 active:translate-y-0.5 hover:bg-stone-300 click-shrink hover-wiggle">
                         {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
                     </button>
-                    <button onClick={() => { audioManager.playClick(); onMenuOpen(); }} onMouseEnter={() => audioManager.playHover()} className="h-8 md:h-10 px-2 md:px-3 border-2 md:border-4 border-black bg-white font-black shadow-[2px_2px_0px_0px_black] active:translate-x-0.5 active:translate-y-0.5 hover:bg-amber-400">
+                    <button onClick={() => { audioManager.playClick(); onMenuOpen(); }} onMouseEnter={() => audioManager.playHover()} className="h-8 md:h-10 px-2 md:px-3 border-2 md:border-4 border-black bg-white font-black shadow-[2px_2px_0px_0px_black] active:translate-x-0.5 active:translate-y-0.5 hover:bg-amber-400 click-shrink hover-wiggle">
                         <Menu size={18}/>
                     </button>
                 </div>
@@ -373,26 +410,28 @@ export const MainGame: React.FC<Props> = ({
                                 const isTaken = dailyActionsTaken.includes(action.id);
                                 const actionTheme = getEventTheme(action);
                                 const isStageAction = action.type === 'STAGE';
+                                const isDisabled = isTaken || phase !== 'ACTION_SELECTION' || actionPoints <= 0;
+                                const isGrayedOut = isTaken || actionPoints <= 0;
 
                                 return (
                                     <button
                                         key={action.id}
-                                        disabled={isTaken || phase !== 'ACTION_SELECTION' || actionPoints <= 0}
-                                        onClick={() => { audioManager.playClick(); onSetEvent(action); onSetEventResult(null); }}
+                                        disabled={isDisabled}
+                                        onClick={() => handleSetEvent(action)}
                                         onMouseEnter={() => {
-                                            if (!isTaken && phase === 'ACTION_SELECTION' && actionPoints > 0) {
+                                            if (!isDisabled) {
                                                 audioManager.playHover();
                                             }
                                         }}
                                         className={`
                                             w-full p-2 border-[3px] md:border-4 flex flex-col justify-center gap-1 text-center transition-all min-h-[50px] md:min-h-[70px] relative group
                                             ${currentEvent?.id === action.id ? 'translate-x-1 translate-y-1 shadow-none border-black ring-2 ring-white bg-amber-50' : 'shadow-[3px_3px_0px_0px_black] md:shadow-[5px_5px_0px_0px_black] bg-white'}
-                                            ${isTaken ? 'bg-stone-200 border-stone-400 opacity-40 grayscale' : `${actionTheme.border} ${isStageAction ? 'animate-bounce-subtle ring-4 ring-amber-400/30' : ''}`}
+                                            ${isGrayedOut ? 'bg-stone-200 border-stone-400 opacity-40 grayscale' : `${actionTheme.border} ${isStageAction ? 'animate-bounce-subtle ring-4 ring-amber-400/30' : 'hover:scale-[1.02] active:scale-95'}`}
                                             poly-button
                                         `}
                                     >
                                         <div className="flex items-center justify-center gap-2 w-full">
-                                            <div className={`p-1.5 border-2 border-black transition-colors ${isTaken ? 'bg-stone-400' : actionTheme.gridBg}`}>
+                                            <div className={`p-1.5 border-2 border-black transition-colors ${isGrayedOut ? 'bg-stone-400' : actionTheme.gridBg}`}>
                                                 {isTaken ? <Check size={12} className="text-white" /> : getActionIcon(action.id, action.type)}
                                             </div>
                                             <div className={`font-black leading-none uppercase truncate flex-1 ${isStageAction ? 'text-amber-700' : ''} ${actionTitleClass}`}>
@@ -445,6 +484,7 @@ export const MainGame: React.FC<Props> = ({
                                             shrink-0 z-[100]
                                             flex items-center gap-2
                                             animate-pop
+                                            click-shrink
                                         "
                                     >
                                         <span className="relative z-10">迎接明日</span>
@@ -453,7 +493,10 @@ export const MainGame: React.FC<Props> = ({
                                 </div>
                             </div>
                         ) : currentEvent && phase !== 'MORNING_EVENT' ? (
-                            <div className="flex-1 flex flex-col h-full overflow-hidden">
+                            <div 
+                                className={`flex-1 flex flex-col h-full overflow-hidden ${isExiting ? 'animate-slide-out-bottom' : 'animate-slide-in-bottom'}`}
+                                key={eventResult ? `res-${day}-${currentEvent.id}` : `evt-${day}-${currentEvent.id}`}
+                            >
                                 <div className={`flex items-center justify-between gap-2 bg-black/50 border-2 p-1.5 md:p-2 rounded shrink-0 h-auto min-h-[3rem] ${currentTheme.border}`}>
                                     <div className="flex items-center gap-2 flex-1 min-w-0">
                                         <p className={`flex-1 font-black italic text-white leading-tight ${footerTextClass} ${currentEvent.id === 'sudden_carrot_tissue' && !eventResult ? 'blur-[4px] hover:blur-none transition-all cursor-help' : ''}`}>
@@ -472,9 +515,9 @@ export const MainGame: React.FC<Props> = ({
                                 <div className="mt-1 md:mt-2 flex gap-2 h-14 md:h-18 shrink-0">
                                     {eventResult ? (
                                         <button 
-                                            onClick={() => { audioManager.playClick(); onResolutionComplete(); }} 
+                                            onClick={handleResolution} 
                                             onMouseEnter={() => audioManager.playHover()}
-                                            className="flex-1 bg-white text-black font-black text-sm md:text-xl border-2 border-black hover:bg-amber-400 active:translate-y-0.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)]"
+                                            className="flex-1 bg-white text-black font-black text-sm md:text-xl border-2 border-black hover:bg-amber-400 active:translate-y-0.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] transition-transform hover:scale-[1.01] active:scale-95 click-shrink"
                                         >
                                             我知道了，喵
                                         </button>
@@ -485,9 +528,9 @@ export const MainGame: React.FC<Props> = ({
                                                 <button 
                                                     key={choice.id} 
                                                     disabled={choice.condition ? !choice.condition(stats) : false}
-                                                    onClick={() => { audioManager.playClick(); onChoice(choice); }}
+                                                    onClick={() => handleChoice(choice)}
                                                     onMouseEnter={() => (choice.condition ? choice.condition(stats) : true) && audioManager.playHover()}
-                                                    className={`flex-1 border-2 md:border-4 border-white bg-black/20 text-white font-black leading-none uppercase transition-all flex flex-col items-center justify-center disabled:opacity-30 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] ${currentTheme.btn} hover:text-black active:translate-y-0.5 p-1 ${choiceTextClass}`}
+                                                    className={`flex-1 border-2 md:border-4 border-white bg-black/20 text-white font-black leading-none uppercase transition-all flex flex-col items-center justify-center disabled:opacity-30 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] ${currentTheme.btn} hover:text-black active:translate-y-0.5 active:scale-95 hover:scale-105 p-1 ${choiceTextClass} click-shrink`}
                                                 >
                                                     <span className="px-1">{choice.text}</span>
                                                     {chance !== null && (
@@ -502,7 +545,7 @@ export const MainGame: React.FC<Props> = ({
                                 </div>
                             </div>
                         ) : (
-                            <div className="h-full flex items-center justify-center text-white/20 italic font-black text-xs md:text-lg uppercase tracking-widest border-2 border-dashed border-white/5 rounded">
+                            <div className={`h-full flex items-center justify-center text-white/20 italic font-black text-xs md:text-lg uppercase tracking-widest border-2 border-dashed border-white/5 rounded ${isExiting ? 'animate-slide-out-bottom' : 'animate-slide-in-bottom'}`}>
                                 {actionPoints > 0 ? "点击卡片开启冒险..." : "今日力竭，请点击迎接明日"}
                             </div>
                         )}
@@ -528,9 +571,9 @@ export const MainGame: React.FC<Props> = ({
                             {currentEvent.choices.map(choice => (
                             <button 
                                 key={choice.id}
-                                onClick={() => { audioManager.playClick(); onChoice(choice); }}
+                                onClick={() => handleChoice(choice)}
                                 onMouseEnter={() => audioManager.playHover()}
-                                className={`w-full p-4 bg-white border-[4px] border-black text-left font-black hover:bg-amber-100 transition-colors shadow-[4px_4px_0px_0px_black] active:translate-y-1 flex justify-between items-center group ${choiceTextClass}`}
+                                className={`w-full p-4 bg-white border-[4px] border-black text-left font-black hover:bg-amber-100 transition-all shadow-[4px_4px_0px_0px_black] active:translate-y-1 active:shadow-none hover:scale-[1.02] flex justify-between items-center group ${choiceTextClass} click-shrink`}
                             >
                                 {choice.text}
                                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -558,7 +601,7 @@ export const MainGame: React.FC<Props> = ({
                         <button 
                             onClick={() => { audioManager.playClick(); onSetPhase('ACTION_SELECTION'); onSetEventResult(null); onSetEvent(null); }}
                             onMouseEnter={() => audioManager.playHover()}
-                            className="w-full py-4 bg-black text-white font-black text-xl border-4 border-black hover:bg-stone-800 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.4)] active:translate-y-1 uppercase tracking-widest"
+                            className="w-full py-4 bg-black text-white font-black text-xl border-4 border-black hover:bg-stone-800 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.4)] active:translate-y-1 active:scale-95 transition-all uppercase tracking-widest click-shrink"
                         >
                             开始今日自由行动
                         </button>
