@@ -114,11 +114,11 @@ const getTextClasses = (scale: TextScale, type: 'log' | 'desc' | 'choice' | 'tit
 export const getStageAvatar = (char: Character | null, currentStage: GameStage) => {
     if (char?.id === 'senior_cat') {
         switch(currentStage) {
-            case 'STRAY': return '/pics/idle/stray.jpg';
-            case 'CAT_LORD': return '/pics/idle/cat_lord.jpg';
-            case 'MANSION': return '/pics/idle/mansion.jpg';
-            case 'CELEBRITY': return '/pics/idle/celebrity.jpg';
-            default: return '/pics/idle/stray.jpg';
+            case 'STRAY': return 'pics/idle/stray.jpg';
+            case 'CAT_LORD': return 'pics/idle/cat_lord.jpg';
+            case 'MANSION': return 'pics/idle/mansion.jpg';
+            case 'CELEBRITY': return 'pics/idle/celebrity.jpg';
+            default: return 'pics/idle/stray.jpg';
         }
     }
     return char?.avatar;

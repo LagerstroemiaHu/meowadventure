@@ -99,7 +99,7 @@
       }
       .home-bg-animated {
         background-color: #ffffff;
-        background-image: url('/pics/home_bg.png');
+        background-image: url('pics/home_bg.png'); /* Removed leading slash */
         background-size: 300px; /* Adjust based on pattern density */
         background-repeat: repeat;
         animation: diagonal-flow 25s linear infinite;
@@ -403,10 +403,7 @@
     "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
     "vite": "https://esm.sh/vite@^7.3.1",
     "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
-    "@/": "./",
-    "express": "https://esm.sh/express@^5.2.1",
-    "path": "https://esm.sh/path@^0.12.7",
-    "url": "https://esm.sh/url@^0.11.4"
+    "@/": "./"
   }
 }
 </script>

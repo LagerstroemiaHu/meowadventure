@@ -6,7 +6,7 @@ export const CHARACTERS: Character[] = [
         id: 'senior_cat',
         name: '圆头耄耋',
         description: '名字源于“猫爹”的谐音。拥有一颗硕大圆润的脑袋和凶狠的眼神。虽然动作不再敏捷，但那是历经百战的霸气，而非衰老。',
-        avatar: '/pics/idle/stray.jpg', // Updated to local asset
+        avatar: 'pics/idle/stray.jpg', // Updated to relative path
         initialStats: {
             health: 60, 
             satiety: 60,
