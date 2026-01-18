@@ -121,7 +121,7 @@ export const EndGame: React.FC<Props> = ({ ending, achievements, isVictory, onRe
                                     <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
                                         <selectedConfig.icon size={48} className={`${selectedConfig.color}`} strokeWidth={2.5}/>
                                     </div>
-                                    <h2 className="text-3xl md:text-5xl font-black mb-2 uppercase tracking-tighter leading-none">
+                                    <h2 className={`text-3xl md:text-5xl font-black mb-2 uppercase tracking-tighter leading-none ${selectedConfig.color}`}>
                                         {selectedConfig.title}
                                     </h2>
                                     <p className={`font-bold text-sm md:text-lg leading-snug ${isVictory ? 'text-stone-600' : 'text-stone-400'}`}>
@@ -163,7 +163,7 @@ export const EndGame: React.FC<Props> = ({ ending, achievements, isVictory, onRe
                                                 <div className={`font-black text-xs uppercase tracking-wider ${isMainForList ? 'text-amber-600' : 'text-stone-400 group-hover:text-black'}`}>
                                                     {isMainForList ? 'MAIN ENDING' : 'ACHIEVEMENT'}
                                                 </div>
-                                                <div className={`font-bold text-sm ${config.color.replace('text-', 'text-') || 'text-black'}`}>{config.title}</div>
+                                                <div className={`font-bold text-sm ${config.color}`}>{config.title}</div>
                                             </div>
                                         </button>
                                     );

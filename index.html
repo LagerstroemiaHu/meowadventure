@@ -221,26 +221,22 @@
         transition-delay: 0.4s;
       }
 
-      /* Game Over Top Curtain - Slowed down */
+      /* Game Over Top Curtain - Updated for Cuter look */
       .curtain-top {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         height: 100%;
-        background-color: #09090b; /* Zinc 950 */
         transform: translateY(-100%);
-        transition: transform 2s cubic-bezier(0.77, 0, 0.175, 1); /* Slower easeInOutQuart */
+        transition: transform 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55); /* Bouncy cute animation */
         z-index: 9999;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        color: #ef4444;
         font-family: 'ZCOOL KuaiLe', cursive;
-        font-size: 4rem;
-        text-shadow: 4px 4px 0px black;
-        box-shadow: 0 10px 50px rgba(0,0,0,0.8);
-        border-bottom: 8px solid #b91c1c;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
       }
       .curtain-top.active {
         transform: translateY(0%);

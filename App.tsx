@@ -285,7 +285,7 @@ export default function App() {
   const finishGame = (type: EndingType) => {
     // 1. Determine Win/Loss for Curtain
     const isVictory = type.startsWith('LEGEND_') || type.startsWith('SURVIVOR_');
-    setGameOverText(isVictory ? "传奇达成" : "GAME OVER");
+    setGameOverText(isVictory ? "传奇达成" : "喵生重来"); // Updated text
 
     // 2. Trigger Transition Animation Immediately
     setIsGameOverTransitioning(true);
