@@ -263,53 +263,10 @@ export default function App() {
           badges.push('ACH_EGG_DEFENDER');
       }
 
-      // Philosophy (Complex Logic Update)
-      // Categorize Choices
-      const POWER_CHOICES = ['phil_choice_dominate', 'phil_choice_divine_right', 'phil_choice_strike', 'phil_choice_oligarch', 'phil_choice_dictator'];
-      const SHARE_CHOICES = ['phil_choice_share', 'phil_choice_social_contract', 'phil_choice_revolution']; // Altruism/Communism
-      const NIHIL_CHOICES = ['phil_choice_overthink_1', 'phil_choice_nihilism', 'phil_choice_simulation']; // Nihilism
-
-      let powerCount = 0;
-      let shareCount = 0;
-      let nihilCount = 0;
-
-      history.forEach(h => {
-          if (POWER_CHOICES.includes(h)) powerCount++;
-          if (SHARE_CHOICES.includes(h)) shareCount++;
-          if (NIHIL_CHOICES.includes(h)) nihilCount++;
-      });
-
-      const totalPhiloChoices = powerCount + shareCount + nihilCount;
-
-      // Check specific Philosophy Endings
+      // Philosophy
       if (history.includes('phil_choice_revolution')) { badges.push('ACH_PHILO_UTOPIA'); hasRelationship = true; }
+      if (history.includes('phil_choice_simulation')) { badges.push('ACH_PHILO_NIHILISM'); hasRelationship = true; }
       if (history.includes('phil_choice_divine_right') && history.includes('phil_choice_oligarch')) { badges.push('ACH_PHILO_DICTATOR'); hasRelationship = true; }
-      
-      // OPTIMIZED NIHILISM LOGIC: Must select ALL 3 Nihilism options
-      const fullNihilism = history.includes('phil_choice_overthink_1') && history.includes('phil_choice_nihilism') && history.includes('phil_choice_simulation');
-      if (fullNihilism) { 
-          badges.push('ACH_PHILO_NIHILISM'); 
-          hasRelationship = true; 
-      }
-
-      // 1. 三面派: Three different directions (Power, Share, Nihil each selected at least once)
-      if (powerCount > 0 && shareCount > 0 && nihilCount > 0) {
-          badges.push('ACH_PHILO_THREE_FACED');
-      }
-      // 2. 两面派: Selected 2 of one type (e.g., 2 Power, 1 Share)
-      // Interpretation: Ambivalent but leaning. Not strictly "only 2 and nothing else", but mixed.
-      // Logic: Max count is 2 (assuming 3 stages usually), and Total choices >= 2, and not Three-Faced.
-      else if (totalPhiloChoices >= 2) {
-          // If we have mixed signals (e.g. Power 2, Share 1)
-          const counts = [powerCount, shareCount, nihilCount].filter(c => c > 0);
-          if (counts.length >= 2) {
-              badges.push('ACH_PHILO_TWO_FACED');
-          }
-      }
-      // 3. 岁月静好 (Apolitical): No philosophy choices made
-      if (totalPhiloChoices === 0) {
-          badges.push('ACH_PHILO_APOLITICAL');
-      }
 
       // Live Sales Endings
       if (history.includes('run') && completedEventIds.includes('stage_sales')) badges.push('ACH_RETURN_WILD');
@@ -349,13 +306,14 @@ export default function App() {
       return next;
     });
 
-    // 6. NO LONGER Automatically change phase. Wait for user click on curtain.
+    // NOTE: We do NOT automatically set Phase here anymore.
+    // The MainGame component will display the curtain, and the USER must click it to proceed.
   };
 
+  // Called when user clicks the curtain in MainGame
   const handleProceedToEnding = () => {
-      if (!primaryEnding) return;
-      const isVictory = primaryEnding.startsWith('LEGEND_') || primaryEnding.startsWith('SURVIVOR_');
       audioManager.playClick();
+      const isVictory = primaryEnding?.startsWith('LEGEND_') || primaryEnding?.startsWith('SURVIVOR_');
       setPhase(isVictory ? 'VICTORY' : 'GAME_OVER');
       setIsGameOverTransitioning(false);
   };
@@ -677,12 +635,7 @@ export default function App() {
     }
 
     setPhase('NIGHT_SUMMARY');
-    
-    // Updated: Ensure satiety doesn't drop below 1 during sleep to prevent immediate death
-    setStats(prev => ({
-        ...prev,
-        satiety: Math.max(1, prev.satiety - 15)
-    }));
+    updateStats({ satiety: -15 });
   };
 
   const handleResolutionComplete = () => {

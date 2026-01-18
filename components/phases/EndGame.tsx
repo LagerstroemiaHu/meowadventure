@@ -163,7 +163,7 @@ export const EndGame: React.FC<Props> = ({ ending, achievements, isVictory, onRe
                                                 <div className={`font-black text-xs uppercase tracking-wider ${isMainForList ? 'text-amber-600' : 'text-stone-400 group-hover:text-black'}`}>
                                                     {isMainForList ? 'MAIN ENDING' : 'ACHIEVEMENT'}
                                                 </div>
-                                                <div className={`font-bold text-sm text-black`}>{config.title}</div>
+                                                <div className={`font-bold text-sm ${config.color.replace('text-', 'text-') || 'text-black'}`}>{config.title}</div>
                                             </div>
                                         </button>
                                     );
