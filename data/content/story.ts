@@ -31,7 +31,7 @@ export const STORY_QUESTS: GameEvent[] = [
                      const chance = Math.min(95, 40 + stats.hissing * 0.5 + stats.health * 0.2);
                      if (roll(chance)) {
                          return { 
-                             changes: { hissing: 20, smarts: 5, satiety: -10 }, 
+                             changes: { hissing: 15, smarts: 5, satiety: -10 }, 
                              message: '一记左勾拳，新王登基！所有的流浪猫都低下了头，向新的领主致敬。', 
                              success: true, 
                              effectType: 'neutral',
@@ -55,7 +55,7 @@ export const STORY_QUESTS: GameEvent[] = [
                 effect: (stats) => {
                     if (roll(Math.min(95, 20 + stats.smarts * 0.8))) {
                          return { 
-                             changes: { hissing: 5, smarts: 10, satiety: -5 }, 
+                             changes: { hissing: 10, smarts: 10, satiety: -5 }, 
                              message: '你运用了《厚黑学》。通过承诺分配垃圾桶的使用权，你兵不血刃地瓦解了独眼龙的统治。', 
                              success: true, 
                              effectType: 'neutral',

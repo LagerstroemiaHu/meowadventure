@@ -23,7 +23,7 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
             {
                 id: 'app_choice_teach',
                 text: '教它生存之道',
-                calculateChance: (stats) => Math.min(95, 30 + stats.smarts * 0.5 + stats.hissing * 0.2),
+                calculateChance: (stats) => Math.min(95, 30 + stats.smarts * 0.5 + stats.hissing * 0.3),
                 effect: (stats) => {
                     if (roll(30 + stats.smarts * 0.5 + stats.hissing * 0.2)) {
                         return {
@@ -44,7 +44,7 @@ export const APPRENTICE_QUESTS: GameEvent[] = [
             {
                 id: 'app_choice_rob',
                 text: '抢走它的铃铛',
-                calculateChance: (stats) => Math.min(95, 40 + stats.hissing * 0.6),
+                calculateChance: (stats) => Math.min(95, 40 + stats.hissing * 0.8),
                 effect: (stats) => {
                     if (roll(40 + stats.hissing * 0.6)) {
                         return {

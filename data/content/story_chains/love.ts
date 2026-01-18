@@ -23,7 +23,7 @@ export const LOVE_QUESTS: GameEvent[] = [
             {
                 id: 'love_choice_dance',
                 text: '加入节奏',
-                calculateChance: (stats) => Math.min(90, 10 + stats.smarts * 0.5 + stats.health * 0.3),
+                calculateChance: (stats) => Math.min(90, 10 + stats.smarts * 0.5 + stats.health * 0.4),
                 effect: (stats) => {
                     if (roll(10 + stats.smarts * 0.5 + stats.health * 0.3)) {
                         return {

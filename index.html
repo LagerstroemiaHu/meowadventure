@@ -147,7 +147,7 @@
         justify-content: center;
       }
 
-      /* 舞台幕布转场 - 优化为丝绸/天鹅绒质感 */
+      /* 舞台幕布转场 */
       .curtain-container {
         position: absolute;
         inset: 0;
@@ -160,9 +160,7 @@
         top: 0;
         bottom: 0;
         width: 50%;
-        /* 深色底色，模拟黑色天鹅绒 */
         background-color: #0f0f0f;
-        /* 垂直线性渐变模拟布料褶皱的光泽 */
         background-image: linear-gradient(90deg, 
             #0a0a0a 0%, 
             #262626 15%, 
@@ -172,23 +170,19 @@
             #262626 85%, 
             #0a0a0a 100%
         );
-        /* 更柔和的动画曲线，像布料摆动 */
         transition: transform 1.0s cubic-bezier(0.22, 1, 0.36, 1);
-        /* 内阴影增加厚重感，外阴影增加立体感 */
         box-shadow: 
             inset 0 0 40px rgba(0,0,0,0.8), 
             0 0 50px rgba(0,0,0,0.9);
       }
       .curtain-left {
         left: 0;
-        transform: translateX(-102%); /* 稍微多移一点确保完全隐藏 */
-        /* 金色包边 */
+        transform: translateX(-102%);
         border-right: 4px solid #fbbf24;
       }
       .curtain-right {
         right: 0;
         transform: translateX(102%);
-        /* 金色包边 */
         border-left: 4px solid #fbbf24;
       }
       
@@ -218,7 +212,7 @@
         transition-delay: 0.4s;
       }
 
-      /* Game Over Top Curtain */
+      /* Game Over Top Curtain - Slowed down */
       .curtain-top {
         position: fixed;
         top: 0;
@@ -227,7 +221,7 @@
         height: 100%;
         background-color: #09090b; /* Zinc 950 */
         transform: translateY(-100%);
-        transition: transform 1.2s cubic-bezier(0.86, 0, 0.07, 1);
+        transition: transform 2s cubic-bezier(0.77, 0, 0.175, 1); /* Slower easeInOutQuart */
         z-index: 9999;
         display: flex;
         align-items: center;
@@ -299,7 +293,6 @@
         animation: pop-pulse 2s infinite ease-in-out;
       }
 
-      /* New Animations for Prologue Text */
       @keyframes wiggle {
         0%, 100% { transform: rotate(-3deg); }
         50% { transform: rotate(3deg); }
@@ -327,6 +320,16 @@
       .animate-in {
         animation: fade-in 0.4s ease-out forwards;
       }
+      
+      /* New Staggered Fade Up Animation */
+      @keyframes fade-in-up {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fade-in-up {
+        animation: fade-in-up 0.6s ease-out forwards;
+        opacity: 0; /* Initially hidden */
+      }
 
       /* 粒子动画系统 - 优化可见性 */
       .stat-particle {
@@ -334,26 +337,24 @@
         pointer-events: none;
         z-index: 100;
         box-shadow: 0 0 1px rgba(255,255,255,0.6);
-        /* Screen blend mode makes overlapping particles creating a bright "light burst" effect */
         mix-blend-mode: screen; 
       }
 
-      /* 汇聚：从远处（左右两侧）旋转加速吸入 */
       @keyframes particle-gather {
         0% {
           transform: translate(var(--tx), var(--ty)) rotate(var(--rot-start)) scale(1);
           opacity: 0;
         }
         20% {
-          opacity: 0.75; /* 要求的 75% 不透明度 */
+          opacity: 0.75;
         }
         80% {
             transform: translate(calc(var(--tx) * 0.15), calc(var(--ty) * 0.15)) rotate(calc(var(--rot-end) * 0.8)) scale(0.8);
             opacity: 0.9;
-            filter: brightness(1.2); /* Slight flicker before collision */
+            filter: brightness(1.2);
         }
         90% {
-            filter: brightness(2); /* Collision burst */
+            filter: brightness(2);
         }
         100% {
           transform: translate(0, 0) rotate(var(--rot-end)) scale(0.2);
@@ -362,7 +363,6 @@
         }
       }
 
-      /* 爆炸：快速炸开并旋转，然后消失 */
       @keyframes particle-explode {
         0% {
           transform: translate(0, 0) rotate(var(--rot-start)) scale(0.5);

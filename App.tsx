@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { GameStats, GamePhase, GameEvent, Choice, LogEntry, GameStage, EndingType, Character, NightThought } from './types';
 import { RANDOM_EVENTS, RANDOM_EVENTS_EXTRA, DAILY_ACTIONS, STORY_QUESTS, CHARACTERS, SUDDEN_EVENTS, SIDE_STORIES, NIGHT_THOUGHTS } from './data/events';
@@ -27,7 +27,7 @@ interface SaveData {
   stage: GameStage;
   completedEventIds: string[];
   completedAt: Record<string, number>;
-  failedAt: Record<string, number>; // New: Track failure dates
+  failedAt: Record<string, number>;
   history: string[];
   currentQuestIndex: number;
   actionPoints: number;
@@ -100,6 +100,9 @@ export default function App() {
   });
   const [viewGallery, setViewGallery] = useState(false);
 
+  // Debounce reference for autosave
+  const autosaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     localStorage.setItem('cat_text_scale', textScale);
   }, [textScale]);
@@ -123,16 +126,32 @@ export default function App() {
   }, [phase, stage]);
 
   useEffect(() => {
+    // Only Autosave in active game phases
     if (phase !== 'START' && phase !== 'PROLOGUE' && phase !== 'REBIRTH' && phase !== 'CHARACTER_SELECT' && phase !== 'GAME_OVER' && phase !== 'VICTORY' && character && !isGameOverTransitioning) {
-        const saveData: SaveData = {
-            day, stats, stage, completedEventIds, completedAt, failedAt, history, 
-            currentQuestIndex, actionPoints, dailyActionsTaken, logs, lastRandomEventId, character,
-            seenNightThoughtIds,
-            timestamp: Date.now(),
-            version: '1.0.5'
-        };
-        localStorage.setItem('cat_adventure_autosave', JSON.stringify(saveData));
+        
+        // Clear existing timeout
+        if (autosaveTimeoutRef.current) {
+            clearTimeout(autosaveTimeoutRef.current);
+        }
+
+        // Set new timeout (debounce 1000ms)
+        autosaveTimeoutRef.current = setTimeout(() => {
+            const saveData: SaveData = {
+                day, stats, stage, completedEventIds, completedAt, failedAt, history, 
+                currentQuestIndex, actionPoints, dailyActionsTaken, logs, lastRandomEventId, character,
+                seenNightThoughtIds,
+                timestamp: Date.now(),
+                version: '1.0.5'
+            };
+            localStorage.setItem('cat_adventure_autosave', JSON.stringify(saveData));
+        }, 1000);
     }
+
+    return () => {
+        if (autosaveTimeoutRef.current) {
+            clearTimeout(autosaveTimeoutRef.current);
+        }
+    };
   }, [day, stats, stage, completedEventIds, completedAt, failedAt, history, currentQuestIndex, actionPoints, dailyActionsTaken, logs, lastRandomEventId, character, seenNightThoughtIds, phase, isGameOverTransitioning]);
 
   const addLog = (message: string, type: LogEntry['type'] = 'info') => {
@@ -208,15 +227,21 @@ export default function App() {
       if (stats.health >= 60 && stats.satiety >= 60 && stats.smarts >= 60 && stats.hissing >= 60) badges.push('STAT_BALANCED');
 
       // Story Chains
-      if (completedEventIds.includes('side_apprentice_celeb_good')) badges.push('ACH_APPRENTICE_MASTER');
-      if (completedEventIds.includes('side_apprentice_celeb_evil')) badges.push('ACH_APPRENTICE_RIVAL');
+      let hasRelationship = false;
+
+      // Apprentice
+      if (completedEventIds.includes('side_apprentice_celeb_good')) { badges.push('ACH_APPRENTICE_MASTER'); hasRelationship = true; }
+      if (completedEventIds.includes('side_apprentice_celeb_evil')) { badges.push('ACH_APPRENTICE_RIVAL'); hasRelationship = true; }
+      // Traitor logic handled in finishGame usually if ending prematurely, 
+      // but checking generic history for completion:
+      // Note: 'ACH_APPRENTICE_TRAITOR' is usually a bad ending or a state, 
+      // here we simplify: if user went deep into apprentice line but failed
       
       // Love Chain
       const hasBalls = !history.includes('choice_egg_surrender') && !failedAt['side_egg_crisis'];
-      if (completedEventIds.includes('side_hakimi_3') && history.includes('love_choice_open_window') && hasBalls) badges.push('ACH_LOVE_TRUE');
-      if (completedEventIds.includes('side_hakimi_3') && history.includes('love_choice_open_window') && hasBalls) badges.push('ACH_LOVE_FAMILY'); // 成功且有蛋蛋 -> 儿孙满堂
-      if (completedEventIds.includes('side_hakimi_3') && history.includes('love_choice_watch')) badges.push('ACH_LOVE_REGRET');
-      if (completedEventIds.includes('side_hakimi_3_neutered') && history.includes('love_choice_show_scar')) badges.push('ACH_LOVE_PLATONIC');
+      if (completedEventIds.includes('side_hakimi_3') && history.includes('love_choice_open_window') && hasBalls) { badges.push('ACH_LOVE_TRUE'); badges.push('ACH_LOVE_FAMILY'); hasRelationship = true; }
+      if (completedEventIds.includes('side_hakimi_3') && history.includes('love_choice_watch')) { badges.push('ACH_LOVE_REGRET'); hasRelationship = true; }
+      if (completedEventIds.includes('side_hakimi_3_neutered') && history.includes('love_choice_show_scar')) { badges.push('ACH_LOVE_PLATONIC'); hasRelationship = true; }
 
       // Egg Crisis
       // 孤睾战士：被绝育 (主动顺从 OR 抵抗失败)
@@ -224,13 +249,21 @@ export default function App() {
           badges.push('ACH_EGG_DEFENDER');
       }
 
-      if (history.includes('phil_choice_revolution')) badges.push('ACH_PHILO_UTOPIA');
-      if (history.includes('phil_choice_simulation')) badges.push('ACH_PHILO_NIHILISM');
-      if (history.includes('phil_choice_divine_right') && history.includes('phil_choice_oligarch')) badges.push('ACH_PHILO_DICTATOR');
+      // Philosophy
+      if (history.includes('phil_choice_revolution')) { badges.push('ACH_PHILO_UTOPIA'); hasRelationship = true; }
+      if (history.includes('phil_choice_simulation')) { badges.push('ACH_PHILO_NIHILISM'); hasRelationship = true; }
+      if (history.includes('phil_choice_divine_right') && history.includes('phil_choice_oligarch')) { badges.push('ACH_PHILO_DICTATOR'); hasRelationship = true; }
 
       // Live Sales Endings
       if (history.includes('run') && completedEventIds.includes('stage_sales')) badges.push('ACH_RETURN_WILD');
       if (history.includes('run') && !completedEventIds.includes('stage_sales')) badges.push('ACH_CAGE_CAT');
+
+      // Achievement: Lone Wolf
+      // Condition: Is a Survival Victory AND No Deep Relationships formed
+      const isVictory = mainEnding.startsWith('LEGEND_') || mainEnding.startsWith('SURVIVOR_');
+      if (isVictory && !hasRelationship) {
+          badges.push('ACH_LONE_WOLF');
+      }
 
       return badges;
   };
@@ -244,6 +277,7 @@ export default function App() {
     setIsGameOverTransitioning(true);
     
     // 3. Remove Autosave IMMEDIATELY to prevent resuming dead game
+    if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
     localStorage.removeItem('cat_adventure_autosave');
     
     // 4. Determine Primary Ending and Achievements
@@ -259,10 +293,11 @@ export default function App() {
     });
 
     // 6. Delay Phase Change to allow curtain animation to finish
+    // Increased delay to match slower curtain animation (2s)
     setTimeout(() => {
         setPhase(isVictory ? 'VICTORY' : 'GAME_OVER'); // Use VICTORY phase if win, though they map to same component
         setIsGameOverTransitioning(false);
-    }, 1500); 
+    }, 2200); 
   };
 
   // --- SAVE / LOAD SYSTEM ---
@@ -602,6 +637,9 @@ export default function App() {
 
   const resetGame = () => {
       audioManager.playClick();
+      // Ensure all timers are clear and bgm stops if transitioning back to title logic
+      // Though here we go to START phase which TitleScreen handles bgm
+      
       setPhase('START');
       setDay(1);
       // 保持当前选择的角色重新开始

@@ -111,6 +111,9 @@ export type EndingType =
   // --- SPECIAL STAGE SALES ENDINGS (2) ---
   | 'ACH_RETURN_WILD' | 'ACH_CAGE_CAT'
 
+  // --- SPECIAL ISOLATION (1) ---
+  | 'ACH_LONE_WOLF'
+
   // --- TRAITS / STATS (6) ---
   | 'TRAIT_SAINT' | 'TRAIT_DEVIL' | 'TRAIT_COWARD'
   | 'STAT_MAX_SMARTS' | 'STAT_MAX_HISSING' | 'STAT_BALANCED';

@@ -44,18 +44,18 @@ export const SUDDEN_EVENTS: GameEvent[] = [
             {
                 id: 'vomit_pain',
                 text: '呕...好难受',
-                calculateChance: (stats) => 10,
+                calculateChance: (stats) => 25,
                 effect: (stats) => {
-                    if (roll(10)) {
+                    if (roll(25)) {
                         return {
-                            changes: { health: -5, satiety: -15 },
+                            changes: { health: -10, satiety: -10 },
                             message: '你找了个草丛解决了问题。虽然有点虚弱，但胃舒服多了。',
                             success: true,
                             effectType: 'heal'
                         }
                     }
                     return {
-                        changes: { health: -10, satiety: -20, hissing: -5 },
+                        changes: { health: -30, satiety: -30, hissing: -10 },
                         message: '你在草丛里吐得昏天黑地。刚才吃的美味全白费了，还让你虚弱不堪。',
                         success: false,
                         effectType: 'damage'
@@ -67,7 +67,7 @@ export const SUDDEN_EVENTS: GameEvent[] = [
                 text: '强行消化',
                 calculateChance: (stats) => Math.min(60, stats.health * 0.8),
                 effect: (stats) => {
-                    if (roll(Math.min(60, stats.health * 0.8))) {
+                    if (roll(Math.min(15, stats.health * 0.8))) {
                          return { 
                              changes: { satiety: -5, health: -5 }, 
                              message: '你趴在地上哼哼了一下午，终于缓过来了。虽然肚子还是不舒服，但至少没吐。', 
@@ -76,7 +76,7 @@ export const SUDDEN_EVENTS: GameEvent[] = [
                          };
                     }
                     return { 
-                        changes: { health: -15, satiety: -15 }, 
+                        changes: { health: -10, satiety: -10 }, 
                         message: '你的胃在抗议！剧烈的腹痛让你在地上打滚。不仅没消化，反而更严重了。', 
                         success: false, 
                         effectType: 'damage' 
@@ -98,7 +98,7 @@ export const SUDDEN_EVENTS: GameEvent[] = [
                 id: 'get_beaten',
                 text: '正面硬刚',
                 effect: (stats) => ({
-                    changes: { health: -20, hissing: -15 },
+                    changes: { health: -15, hissing: -20 },
                     message: '你被追了五条街。你的耳朵被咬了一个缺口。你意识到自己只是一只老猫，不是神。',
                     success: false,
                     effectType: 'damage'
@@ -191,7 +191,7 @@ export const SUDDEN_EVENTS: GameEvent[] = [
                 id: 'ouch',
                 text: '硬撑',
                 effect: (stats) => ({
-                    changes: { health: -10 },
+                    changes: { health: -20 },
                     message: '你今天不得不跛着脚走路。行动力受到影响。',
                     success: false,
                     effectType: 'damage'
@@ -202,16 +202,16 @@ export const SUDDEN_EVENTS: GameEvent[] = [
                 text: '彻底躺平',
                 calculateChance: (stats) => 90,
                 effect: (stats) => {
-                    if (roll(90)) {
+                    if (roll(80)) {
                         return {
-                            changes: { satiety: -10, health: 2 },
+                            changes: { satiety: -20, health: -5 },
                             message: '你决定今天什么都不做。虽然肚子饿得咕咕叫，但腿稍微舒服点了。',
                             success: true,
                             effectType: 'sleep'
                         }
                     }
                     return {
-                        changes: { satiety: -10, health: -5 },
+                        changes: { satiety: -25, health: -15 },
                         message: '躺了一天，结果腿更麻了，肚子也饿扁了。',
                         success: false,
                         effectType: 'damage'
@@ -231,9 +231,9 @@ export const SUDDEN_EVENTS: GameEvent[] = [
             {
                 id: 'eat_save',
                 text: '狼吞虎咽',
-                calculateChance: (stats) => 95,
+                calculateChance: (stats) => 80,
                 effect: (stats) => {
-                    if (roll(95)) {
+                    if (roll(80)) {
                         return {
                             changes: { satiety: 20, health: 5 },
                             message: '感谢猫神！你活下来了。虽然肉包有点凉，但在你嘴里胜过满汉全席。',
@@ -252,9 +252,9 @@ export const SUDDEN_EVENTS: GameEvent[] = [
             {
                 id: 'save_half',
                 text: '留一半当夜宵',
-                calculateChance: (stats) => 90,
+                calculateChance: (stats) => 95,
                 effect: (stats) => {
-                    if (roll(90)) {
+                    if (roll(95)) {
                         return {
                             changes: { satiety: 10, smarts: 5 },
                             message: '你克制住了欲望，把一半藏了起来。这种未雨绸缪的智慧让你感到自豪。',

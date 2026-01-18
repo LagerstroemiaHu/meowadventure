@@ -90,7 +90,7 @@ const MISC_QUESTS: GameEvent[] = [
                 text: '直播对线',
                 calculateChance: (stats) => 50,
                 effect: (stats) => {
-                    if (roll(50)) {
+                    if (roll(Math.min(80, 20 + stats.hissing * 0.4 + stats.smarts * 0.4))) {
                         return {
                             changes: { hissing: 10, smarts: -2, satiety: 5 },
                             message: '你对着镜头哈了十分钟气，反向带货。流量爆炸了，但你的猫设变得暴力。',

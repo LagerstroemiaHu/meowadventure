@@ -10,7 +10,11 @@ class AudioManager {
   // Audio state management
   private bgmAudio: HTMLAudioElement | null = null;
   private currentBgmKey: string | null = null;
-  private sfxCache: Map<string, HTMLAudioElement> = new Map();
+  
+  // SFX Object Pool
+  // Map<SoundKey, Array<HTMLAudioElement>>
+  private sfxPool: Map<string, HTMLAudioElement[]> = new Map();
+  private readonly POOL_SIZE = 5; // Max concurrent instances of the SAME sound
   
   // Timer references for clearing intervals
   private fadeInterval: ReturnType<typeof setInterval> | null = null;
@@ -35,18 +39,28 @@ class AudioManager {
   }
 
   public async init() {
-    this.preloadSfx('click');
-    this.preloadSfx('hover');
-    this.preloadSfx('success');
-    this.preloadSfx('fail');
+    // Preload critical SFX by creating the pool
+    // This creates DOM elements, but a limited number (POOL_SIZE per sound)
+    // We only do this for very frequent sounds to avoid startup lag
+    ['click', 'page_flip', 'hover'].forEach(key => {
+        this.initializePool(key as SfxKey);
+    });
   }
 
-  private preloadSfx(key: SfxKey) {
-    if (!this.sfxCache.has(key)) {
-      const audio = new Audio(AUDIO_ASSETS.sfx[key]);
-      audio.volume = this._sfxVolume;
-      this.sfxCache.set(key, audio);
-    }
+  private initializePool(key: SfxKey) {
+      if (this.sfxPool.has(key)) return;
+
+      const url = AUDIO_ASSETS.sfx[key];
+      if (!url) return;
+
+      const pool: HTMLAudioElement[] = [];
+      for (let i = 0; i < this.POOL_SIZE; i++) {
+          const audio = new Audio(url);
+          audio.volume = this._sfxVolume;
+          audio.preload = 'auto';
+          pool.push(audio);
+      }
+      this.sfxPool.set(key, pool);
   }
 
   public playBgm(key: BgmKey) {
@@ -73,11 +87,8 @@ class AudioManager {
     // 3. Start new BGM
     const newBgm = new Audio(url);
     newBgm.loop = true;
-    // If muted, volume is 0 effectively, but we manage muted property
     newBgm.muted = this._isMuted; 
-    
-    // Start with volume 0 for fade-in
-    newBgm.volume = 0; 
+    newBgm.volume = 0; // Start at 0 for fade
     
     const playPromise = newBgm.play();
     
@@ -100,8 +111,6 @@ class AudioManager {
     
     if (this.bgmAudio) {
         this.fadeOut(this.bgmAudio);
-        // Note: fadeOut will handle the nulling after fade complete, 
-        // but currentBgmKey should be cleared now to allow re-play.
         this.currentBgmKey = null;
     }
   }
@@ -109,13 +118,31 @@ class AudioManager {
   public playSfx(key: SfxKey) {
     if (this._isMuted) return;
 
-    const url = AUDIO_ASSETS.sfx[key];
-    if (!url) return;
+    // Ensure pool exists
+    if (!this.sfxPool.has(key)) {
+        this.initializePool(key);
+    }
 
-    // Clone or new instance to allow overlapping SFX
-    const audio = new Audio(url);
+    const pool = this.sfxPool.get(key);
+    if (!pool) return;
+
+    // Find a free audio element (ended or paused)
+    let audio = pool.find(a => a.paused || a.ended);
+
+    // If all are busy, steal the oldest one (first in list usually has been playing longest)
+    // or just use the first one and reset it
+    if (!audio) {
+        audio = pool[0];
+        audio.currentTime = 0;
+    }
+
+    // Update volume in case it changed
     audio.volume = this._sfxVolume;
-    audio.play().catch(() => {});
+    
+    // Play
+    audio.play().catch(e => {
+        // Ignore play errors (e.g. rapid interaction or background tab policy)
+    });
   }
 
   public playClick() {
@@ -123,7 +150,6 @@ class AudioManager {
   }
 
   public playHover() {
-      // Optional: re-enable if desired, currently quiet
       // this.playSfx('hover'); 
   }
 
@@ -142,12 +168,10 @@ class AudioManager {
   }
 
   private fadeIn(audio: HTMLAudioElement) {
-    // Safety check
     if (this.fadeInterval) clearInterval(this.fadeInterval);
 
     let vol = 0;
     this.fadeInterval = setInterval(() => {
-      // Check if audio is still valid and playing
       if (!audio || audio.paused || audio !== this.bgmAudio) {
           if (this.fadeInterval) clearInterval(this.fadeInterval);
           return;
@@ -160,15 +184,10 @@ class AudioManager {
         if (this.fadeInterval) clearInterval(this.fadeInterval);
         this.fadeInterval = null;
       }
-    }, 100); // 100ms * 6 steps = ~0.6s fade in
+    }, 100); 
   }
 
   private fadeOut(audio: HTMLAudioElement) {
-    // We don't track fadeOut interval globally because we might want to fade out 
-    // an OLD track while fading in a NEW one. 
-    // However, in this strict singleton implementation, we usually just stop it.
-    // If we want a smooth stop, we run a local interval.
-    
     let vol = audio.volume;
     const interval = setInterval(() => {
       if (vol > 0) {

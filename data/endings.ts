@@ -1,6 +1,6 @@
 
 import { EndingType, EndingConfig } from '../types';
-import { Skull, Crown, Star, Home, Heart, Zap, Ghost, Trash2, Camera, Brain, Shield, Users, HeartCrack, Baby, Smile, Frown, Swords, Flag, Eye, Lock, Bird, EggOff, Cat } from 'lucide-react';
+import { Skull, Crown, Star, Home, Heart, Zap, Ghost, Trash2, Camera, Brain, Shield, Users, HeartCrack, Baby, Smile, Frown, Swords, Flag, Eye, Lock, Bird, EggOff, Cat, Footprints } from 'lucide-react';
 import { getImg } from './utils';
 
 export const ENDING_REGISTRY: Record<EndingType, EndingConfig> = {
@@ -140,6 +140,10 @@ export const ENDING_REGISTRY: Record<EndingType, EndingConfig> = {
     'ACH_CAGE_CAT': {
         id: 'ACH_CAGE_CAT', title: '笼中困兽', description: '成就：试图逃离直播生涯失败，被关进了镀金的笼子。',
         icon: Lock, color: 'text-stone-700', isGood: false, image: getImg('金丝笼里眼神黯淡的猫', '292524')
+    },
+    'ACH_LONE_WOLF': {
+        id: 'ACH_LONE_WOLF', title: '孤身一人', description: '成就：你没有爱情，没有徒弟，也没有搞哲学。你像一块石头一样硬邦邦地活到了最后。',
+        icon: Footprints, color: 'text-stone-400', isGood: true, image: getImg('雪地里孤独的脚印', '57534e')
     },
     
     // === TRAITS ===
